@@ -7,7 +7,7 @@
 #define CLK 36
 #define DT 39
 #define SELECT_BUTTON 34
-#define BACK_BUTTON_PIN 19
+// #define BACK_BUTTON_PIN 19
 
 // Initialize the OLED display using the U8g2 library
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -17,7 +17,7 @@ ESP32Encoder rotaryEncoder;
 
 // Initialize button objects for handling button presses
 Bounce2::Button selectButton = Bounce2::Button();
-Bounce2::Button backButton = Bounce2::Button();
+// Bounce2::Button backButton = Bounce2::Button();
 
 // Version information for display
 const char* version = "v1.1";
@@ -117,11 +117,11 @@ void setup() {
   selectButton.interval(5); // Set debounce interval
   selectButton.setPressedState(LOW); // Set pressed state for active-low logic
 
-  // Configure the back button
+  /* // Configure the back button
   backButton.attach(BACK_BUTTON_PIN, INPUT_PULLUP);
   backButton.interval(5); // Set debounce interval
   backButton.setPressedState(LOW); // Set pressed state for active-low logic
-}
+} */
 
 void loop() {
   // Obtain encoder read value
@@ -129,7 +129,7 @@ void loop() {
   
   // Update the button states
   selectButton.update();
-  backButton.update();
+  // backButton.update();
 
   // Draw the menu on the OLED display
   drawMenu();
