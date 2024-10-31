@@ -117,11 +117,13 @@ void setup() {
   selectButton.interval(5); // Set debounce interval
   selectButton.setPressedState(LOW); // Set pressed state for active-low logic
 
-  /* // Configure the back button
+  /*
+  // Configure the back button
   backButton.attach(BACK_BUTTON_PIN, INPUT_PULLUP);
   backButton.interval(5); // Set debounce interval
   backButton.setPressedState(LOW); // Set pressed state for active-low logic
-} */
+  */
+}
 
 void loop() {
   // Obtain encoder read value
