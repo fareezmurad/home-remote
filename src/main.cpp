@@ -73,10 +73,11 @@ void drawMenuList() {
   }
 }
 
+// Function for select button behaviour
 void selectMenu() {
   if (selectButton.pressed()) {
-    if (currentMenu[selectedItemIndex].action != nullptr) currentMenu[selectedItemIndex].action();
-    else if (currentMenu[selectedItemIndex].subMenu != nullptr) {
+    if (currentMenu[selectedItemIndex].action != nullptr) currentMenu[selectedItemIndex].action(); // Check if there is action or not
+    else if (currentMenu[selectedItemIndex].subMenu != nullptr) { // Check if there is a menu
       currentMenu = currentMenu[selectedItemIndex].subMenu;
       currentMenu[selectedItemIndex].subMenu;
     }
