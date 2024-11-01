@@ -52,6 +52,9 @@ const int totalMenuItems = sizeof(mainMenu) / sizeof(mainMenu[0]);
 int encoderCurrentRead = 0;
 int encoderLastRead;
 
+// Variable to track the menu
+int selectedMenu = 0;
+
 // Variables for tracking the currently selected item and starting index for scrolling
 int selectedItemIndex = 0; // Index of the currently selected item
 int startItemIndex = 0; // Track the starting index of the displayed menu items
@@ -76,10 +79,13 @@ void drawMenuList() {
 // Function for select button behaviour
 void selectMenu() {
   if (selectButton.pressed()) {
-    if (currentMenu[selectedItemIndex].action != nullptr) currentMenu[selectedItemIndex].action(); // Check if there is action or not
-    else if (currentMenu[selectedItemIndex].subMenu != nullptr) { // Check if there is a menu
-      currentMenu = currentMenu[selectedItemIndex].subMenu;
-      currentMenu[selectedItemIndex].subMenu;
+    if (currentMenu[selectedMenu].action != nullptr) currentMenu[selectedMenu].action(); // Check if there is action or not
+    else if (currentMenu[selectedMenu].subMenu != nullptr) { // Check if there is a menu
+      currentMenu = currentMenu[selectedMenu].subMenu;
+      currentMenu[selectedMenu].subMenu;
+      startItemIndex = 0;
+      selectedItemIndex = 0;
+      selectedMenu = 0;
     }
   }
 }
@@ -87,13 +93,16 @@ void selectMenu() {
 // Function to highlight the selected menu item
 void highlightSelectedItem() {
   const int visibleItemsCount = min(totalMenuItems - startItemIndex, 3); // Limit to the number of items being displayed
-  int yPos = (selectedItemIndex * 12) + 15; // Calculate y position for the highlighted item
+  int yPos = (min(selectedItemIndex, 3) * 12) + 15; // Calculate y position for the highlighted item
 
   u8g2.setDrawColor(2); // Set draw color for the highlight
   u8g2.drawBox(0, yPos, 128, 12); // Draw a box to highlight the selected item
 
   // Update the selected item index based on rotary encoder
   if (encoderCurrentRead > encoderLastRead) {
+    selectedMenu++;
+    if (selectedMenu > totalMenuItems - 1) selectedMenu = totalMenuItems - 1;
+
     if (selectedItemIndex < visibleItemsCount - 1) {
       selectedItemIndex++; // Move down in the currently visible items
     } else if (startItemIndex + 3 < totalMenuItems) {
@@ -102,6 +111,9 @@ void highlightSelectedItem() {
     }
   }
   if (encoderLastRead > encoderCurrentRead) {
+    selectedMenu--;
+    if (selectedMenu < 0) selectedMenu = 0;
+
     if (selectedItemIndex > 0) {
       selectedItemIndex--; // Move up in the currently visible items
     } else if (startItemIndex > 0) {
