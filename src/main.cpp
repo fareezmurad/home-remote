@@ -22,17 +22,31 @@ Bounce2::Button backButton = Bounce2::Button();
 // Version information for display
 const char* version = "v1.1";
 
-// Define the menu items
-const char* menuItems[] = {
-  "Home Automation",
-  "IR Send",
-  "OLED Animation",
-  "Settings",
-  "Info"
-};
+  struct MenuItem {
+    const char* title;
+    struct MenuItem* subMenu;
+    void (*action)();
+  };
 
-// Calculate the total number of menu items
-const int totalMenuItems = sizeof(menuItems) / sizeof(menuItems[0]);
+  MenuItem irSendMenu[] = {
+    {"Deka Fan", nullptr, nullptr},
+    {"Sharp A/C", nullptr, nullptr},
+    {"Daikin A/C", nullptr, nullptr}
+  };
+
+  // Define the menu items
+  MenuItem mainMenu[] = {
+    {"Home Automation", nullptr, nullptr},
+    {"IR Sends", irSendMenu, nullptr},
+    {"QR Codes", nullptr, nullptr},
+    {"Information", nullptr, nullptr},
+    {"Exit", nullptr, nullptr}
+  };
+
+  MenuItem* currentMenu = mainMenu;
+
+// Calculate the total number of menu itemss
+const int totalMenuItems = sizeof(mainMenu) / sizeof(mainMenu[0]);
 
 // Variables for tracking the encoder current values
 int encoderCurrentRead = 0;
@@ -55,7 +69,17 @@ void drawMenuList() {
   for (int i = 0; i < 3 && (startItemIndex + i) < totalMenuItems; i++) {
     int yPos = (i * 12) + 26;  // Calculate the y position for each menu item
     u8g2.setFont(u8g2_font_spleen6x12_mr); // Set font for menu items
-    u8g2.drawStr(1, yPos, menuItems[startItemIndex + i]); // Draw the menu item
+    u8g2.drawStr(1, yPos, currentMenu[startItemIndex + i].title); // Draw the menu item
+  }
+}
+
+void selectMenu() {
+  if (selectButton.pressed()) {
+    if (currentMenu[selectedItemIndex].action != nullptr) currentMenu[selectedItemIndex].action();
+    else if (currentMenu[selectedItemIndex].subMenu != nullptr) {
+      currentMenu = currentMenu[selectedItemIndex].subMenu;
+      currentMenu[selectedItemIndex].subMenu;
+    }
   }
 }
 
@@ -84,6 +108,7 @@ void highlightSelectedItem() {
       startItemIndex--; // Scroll up the list
     }
   }
+  selectMenu();
 }
 
 // Function to draw the entire menu screen
