@@ -22,31 +22,39 @@ Bounce2::Button selectButton = Bounce2::Button();
 // Version information for display
 const char* version = "v1.1";
 
-  struct MenuItem {
-    const char* title;
-    struct MenuItem* subMenu;
-    void (*action)();
-  };
+struct MenuItem {
+  const char* title;
+  struct MenuItem* subMenu;
+  void (*action)();
+};
 
-  MenuItem irSendMenu[] = {
-    {"Deka Fan", nullptr, nullptr},
-    {"Sharp A/C", nullptr, nullptr},
-    {"Daikin A/C", nullptr, nullptr}
-  };
+MenuItem irSendMenu[] = {
+  {"Deka Fan", nullptr, nullptr},
+  {"Sharp A/C", nullptr, nullptr},
+  {"Daikin A/C", nullptr, nullptr},
+  {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
+};
 
-  // Define the menu items
-  MenuItem mainMenu[] = {
-    {"Home Automation", nullptr, nullptr},
-    {"IR Sends", irSendMenu, nullptr},
-    {"QR Codes", nullptr, nullptr},
-    {"Information", nullptr, nullptr},
-    {"Exit", nullptr, nullptr}
-  };
+// Define the menu items
+MenuItem mainMenu[] = {
+  {"Home Automation", nullptr, nullptr},
+  {"IR Sends", irSendMenu, nullptr},
+  {"QR Codes", nullptr, nullptr},
+  {"Information", nullptr, nullptr},
+  {"Exit", nullptr, nullptr},
+  {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
+};
 
-  MenuItem* currentMenu = mainMenu;
+// Calculate the total number of menu items
+int getMenuItemCount(MenuItem* menu) {
+  int count = 0;
+  while (menu[count].title != nullptr) {
+    count++;
+  }
+  return count;
+};
 
-// Calculate the total number of menu itemss
-const int totalMenuItems = sizeof(mainMenu) / sizeof(mainMenu[0]);
+MenuItem* currentMenu = mainMenu;
 
 // Variables for tracking the encoder current values
 int encoderCurrentRead = 0;
@@ -69,7 +77,7 @@ void drawHeader(const char* header) {
 // Function to draw the list of menu items
 void drawMenuList() {
   // Draw up to 3 items based on the starting index
-  for (int i = 0; i < 3 && (startItemIndex + i) < totalMenuItems; i++) {
+  for (int i = 0; i < 3; i++) {
     int yPos = (i * 12) + 26;  // Calculate the y position for each menu item
     u8g2.setFont(u8g2_font_spleen6x12_mr); // Set font for menu items
     u8g2.drawStr(1, yPos, currentMenu[startItemIndex + i].title); // Draw the menu item
@@ -83,6 +91,7 @@ void selectMenu() {
     else if (currentMenu[selectedMenu].subMenu != nullptr) { // Check if there is a menu
       currentMenu = currentMenu[selectedMenu].subMenu;
       currentMenu[selectedMenu].subMenu;
+
       startItemIndex = 0;
       selectedItemIndex = 0;
       selectedMenu = 0;
@@ -92,6 +101,8 @@ void selectMenu() {
 
 // Function to highlight the selected menu item
 void highlightSelectedItem() {
+  int totalMenuItems = getMenuItemCount(currentMenu);
+
   const int visibleItemsCount = min(totalMenuItems - startItemIndex, 3); // Limit to the number of items being displayed
   int yPos = (min(selectedItemIndex, 3) * 12) + 15; // Calculate y position for the highlighted item
 
@@ -176,4 +187,5 @@ void loop() {
 
   // Update the rotary encoder values for tracking
   encoderLastRead = encoderCurrentRead;
+  Serial.println(getMenuItemCount(currentMenu));
 }
