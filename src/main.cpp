@@ -18,7 +18,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version information for display
-const char* version = "v1.1";
+const char* version = "v1.2";
 
 struct MenuItem {
   const char* title;
@@ -145,7 +145,7 @@ void highlightSelectedItem() {
       startItemIndex++;  // Scroll down the list
     }
   }
-  
+
   if (encoderLastRead > encoderCurrentRead) {
     selectedMenu--;
     if (selectedMenu < 0) selectedMenu = 0;
