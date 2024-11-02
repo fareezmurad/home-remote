@@ -33,13 +33,15 @@ MenuItem dekaFanSpeed[] = {
   {"Speed 1", nullptr, nullptr},
   {"Speed 2", nullptr, nullptr},
   {"Speed 3", nullptr, nullptr},
+  {"Back", nullptr, nullptr},
   {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
 MenuItem irSendMenu[] = {
-  {"Deka Fan", nullptr, nullptr},
+  {"Deka Fan", dekaFanSpeed, nullptr},
   {"Sharp A/C", nullptr, nullptr},
   {"Daikin A/C", nullptr, nullptr},
+  {"Back", nullptr, nullptr},
   {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
@@ -62,7 +64,11 @@ int getMenuItemCount(MenuItem* menu) {
   return count;
 };
 
+// To track current and previous menu for display and button
 MenuItem* currentMenu = mainMenu;
+const int MAX_MENU_DEPTH = 10; // Max levels of menu nesting
+MenuItem* menuStack[MAX_MENU_DEPTH]; // Stack to store menu history
+int menuDepth = 0; // Current depth in the menu stack
 
 // Variables for tracking the encoder current values
 int encoderCurrentRead = 0;
@@ -86,7 +92,7 @@ void drawHeader(const char* header) {
 void drawMenuList() {
   // Draw up to 3 items based on the starting index
   for (int i = 0; i < 3; i++) {
-    int yPos = (i * 12) + 26;  // Calculate the y position for each menu item
+    int yPos = (i * 12) + 25;  // Calculate the y position for each menu item
     u8g2.setFont(u8g2_font_spleen6x12_mr); // Set font for menu items
     u8g2.drawStr(1, yPos, currentMenu[startItemIndex + i].title); // Draw the menu item
   }
@@ -96,9 +102,21 @@ void drawMenuList() {
 void selectMenu() {
   if (selectButton.pressed()) {
     if (currentMenu[selectedMenu].action != nullptr) currentMenu[selectedMenu].action(); // Check if there is action or not
-    else if (currentMenu[selectedMenu].subMenu != nullptr) { // Check if there is a menu
+    
+    else if (currentMenu[selectedMenu].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Check if there is a menu
+      // Push current menu onto the stack before entering submenu
+      menuStack[menuDepth++] = currentMenu;
+      
       currentMenu = currentMenu[selectedMenu].subMenu;
-      currentMenu[selectedMenu].subMenu;
+
+      startItemIndex = 0;
+      selectedItemIndex = 0;
+      selectedMenu = 0;
+    }
+
+    else if (selectedMenu == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) {
+      // "Back" option: Pop the previous menu from the stack
+      currentMenu = menuStack[--menuDepth];
 
       startItemIndex = 0;
       selectedItemIndex = 0;
@@ -115,7 +133,7 @@ void highlightSelectedItem() {
   int yPos = (min(selectedItemIndex, 3) * 12) + 15; // Calculate y position for the highlighted item
 
   u8g2.setDrawColor(2); // Set draw color for the highlight
-  u8g2.drawBox(0, yPos, 128, 12); // Draw a box to highlight the selected item
+  u8g2.drawBox(0, yPos, 128, 13); // Draw a box to highlight the selected item
 
   // Update the selected item index based on rotary encoder
   if (encoderCurrentRead > encoderLastRead) {
@@ -154,7 +172,7 @@ void drawMenu() {
   highlightSelectedItem(); // Call the function to highlight the selected item
 
   // Footer
-  u8g2.drawHLine(0, 53, 128); // Draw a horizontal line at the footer
+  u8g2.drawHLine(0, 54, 128); // Draw a horizontal line at the footer
   u8g2.setFont(u8g2_font_minuteconsole_mr); // Set font for footer
   u8g2.drawStr(128 - (strlen(version) * 5), 63, version); // Draw the version information at the bottom right
   
@@ -195,5 +213,4 @@ void loop() {
 
   // Update the rotary encoder values for tracking
   encoderLastRead = encoderCurrentRead;
-  Serial.println(getMenuItemCount(currentMenu));
 }
