@@ -28,6 +28,14 @@ struct MenuItem {
   void (*action)();
 };
 
+MenuItem dekaFanSpeed[] = {
+  {"Off", nullptr, nullptr},
+  {"Speed 1", nullptr, nullptr},
+  {"Speed 2", nullptr, nullptr},
+  {"Speed 3", nullptr, nullptr},
+  {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
+};
+
 MenuItem irSendMenu[] = {
   {"Deka Fan", nullptr, nullptr},
   {"Sharp A/C", nullptr, nullptr},
