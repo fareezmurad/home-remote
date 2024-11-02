@@ -7,7 +7,6 @@
 #define CLK 36
 #define DT 39
 #define SELECT_BUTTON 34
-// #define BACK_BUTTON_PIN 19
 
 // Initialize the OLED display using the U8g2 library
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -17,7 +16,6 @@ ESP32Encoder rotaryEncoder;
 
 // Initialize button objects for handling button presses
 Bounce2::Button selectButton = Bounce2::Button();
-// Bounce2::Button backButton = Bounce2::Button();
 
 // Version information for display
 const char* version = "v1.1";
@@ -33,7 +31,7 @@ MenuItem dekaFanSpeed[] = {
   {"Speed 1", nullptr, nullptr},
   {"Speed 2", nullptr, nullptr},
   {"Speed 3", nullptr, nullptr},
-  {"Back", nullptr, nullptr},
+  {"Back", nullptr, nullptr}, // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
@@ -41,7 +39,7 @@ MenuItem irSendMenu[] = {
   {"Deka Fan", dekaFanSpeed, nullptr},
   {"Sharp A/C", nullptr, nullptr},
   {"Daikin A/C", nullptr, nullptr},
-  {"Back", nullptr, nullptr},
+  {"Back", nullptr, nullptr}, // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
@@ -147,6 +145,7 @@ void highlightSelectedItem() {
       startItemIndex++;  // Scroll down the list
     }
   }
+  
   if (encoderLastRead > encoderCurrentRead) {
     selectedMenu--;
     if (selectedMenu < 0) selectedMenu = 0;
@@ -191,13 +190,6 @@ void setup() {
   selectButton.attach(SELECT_BUTTON, INPUT);
   selectButton.interval(5); // Set debounce interval
   selectButton.setPressedState(LOW); // Set pressed state for active-low logic
-
-  /*
-  // Configure the back button
-  backButton.attach(BACK_BUTTON_PIN, INPUT_PULLUP);
-  backButton.interval(5); // Set debounce interval
-  backButton.setPressedState(LOW); // Set pressed state for active-low logic
-  */
 }
 
 void loop() {
@@ -206,7 +198,6 @@ void loop() {
   
   // Update the button states
   selectButton.update();
-  // backButton.update();
 
   // Draw the menu on the OLED display
   drawMenu();
