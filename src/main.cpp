@@ -12,28 +12,29 @@
 #define SELECT_BUTTON 34
 #define IR_LED 27
 
-// Initialize the OLED display using the U8g2 library
+// Initialize the OLED display (U8g2 library)
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
-// Initialize the rotary encoder using the ESP32Enccoder
+// Initialize the rotary encoder (ESP32Encoder library)
 ESP32Encoder rotaryEncoder;
 
-// Initialize button objects for handling button presses
+// Initialize button object for "select" button with debouncing (Bounce2 library)
 Bounce2::Button selectButton = Bounce2::Button();
 
-// Initialize the IRsend objects to send IR signals
-IRsend irsend(IR_LED); 
+// Initialize IR sender object for sending IR signals
+IRsend irsend(IR_LED);
 
-// Version information for display
+// Version info
 const char* version = "v1.2";
 
+// Menu item structure for title, optional submenu, and action
 struct MenuItem {
   const char* title;
   struct MenuItem* subMenu;
   void (*action)();
 };
 
-void dekaSpeedControl(int index); // calling the function to the top
+void dekaSpeedControl(int index); // Function declaration for deka fan control (Codes run from top to bottom)
 MenuItem dekaFanMenu[] = {
   {"Off", nullptr, []() { dekaSpeedControl(0); }},
   {"Speed 1", nullptr, []() { dekaSpeedControl(1); }},
@@ -61,7 +62,7 @@ MenuItem mainMenu[] = {
   {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
-// Calculate the total number of menu items
+// Function to calculate the number of menu items dynamically
 int getMenuItemCount(MenuItem* menu) {
   int count = 0;
   while (menu[count].title != nullptr) {
@@ -70,20 +71,20 @@ int getMenuItemCount(MenuItem* menu) {
   return count;
 };
 
-// To track current and previous menu for display and button
+// Track current menu state, menu history, and menu depth for nested menus
 MenuItem* currentMenu = mainMenu;
 const int MAX_MENU_DEPTH = 10; // Max levels of menu nesting
 MenuItem* menuStack[MAX_MENU_DEPTH]; // Stack to store menu history
 int menuDepth = 0; // Current depth in the menu stack
 
-// Variables for tracking the encoder current values
+// Track rotary encoder states
 int encoderCurrentRead = 0;
 int encoderLastRead;
 
-// Variable to track the which menu index currently be highlight
+// Track actual index for selected/highlighted menu item
 int currentItemIndex = 0;
 
-// Variables for tracking the currently selected item and starting index for /display/scrolling
+// Track visible display menu indexes for scrolling
 int displaySelectedItemIndex = 0; // Index of the currently selected item
 int displayStartItemIndex = 0; // Track the starting index of the displayed menu items
 
@@ -94,7 +95,7 @@ void drawHeader(const char* header) {
   u8g2.drawHLine(0, 12, 128); // Draw a horizontal line below the header
 }
 
-// Function to draw the list of menu items
+// Function to draw the list up to 3 menu items
 void drawMenuList() {
   // Draw up to 3 items based on the starting index
   for (int i = 0; i < 3; i++) {
@@ -104,24 +105,23 @@ void drawMenuList() {
   }
 }
 
-// Function for select button behaviour
+// Handle "select" button press for menu navigation
 void selectHighlightedMenu() {
   if (selectButton.pressed()) {
-    if (currentMenu[currentItemIndex].action != nullptr) currentMenu[currentItemIndex].action(); // Check if there is action or not
-    else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Check if there is a menu
+    if (currentMenu[currentItemIndex].action != nullptr) currentMenu[currentItemIndex].action(); // Execute action if defined
+    else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Enter sub-menu if defined
       // Push current menu onto the stack before entering submenu
       menuStack[menuDepth++] = currentMenu;
       currentMenu = currentMenu[currentItemIndex].subMenu;
-
+      // Reset index for display and selection
       displayStartItemIndex = 0;
       displaySelectedItemIndex = 0;
       currentItemIndex = 0;
     }
-
-    else if (currentItemIndex == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) {
+    else if (currentItemIndex == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) { // Go back if select 'back' option in sub-menu
       // "Back" option: Pop the previous menu from the stack
       currentMenu = menuStack[--menuDepth];
-
+      // Reset index for display and selection
       displayStartItemIndex = 0;
       displaySelectedItemIndex = 0;
       currentItemIndex = 0;
@@ -129,7 +129,7 @@ void selectHighlightedMenu() {
   }
 }
 
-// Function to highlight the selected menu item
+// Draw and highlight the currently selected menu item
 void highlightSelectedItem() {
   int totalMenuItems = getMenuItemCount(currentMenu); // Get total current menu count
 
@@ -139,11 +139,11 @@ void highlightSelectedItem() {
   u8g2.setDrawColor(2); // Set draw color for the highlight
   u8g2.drawBox(0, yPos, 128, 13); // Draw a box to highlight the selected item
 
-  // Update the selected item index based on rotary encoder
+  // Handle encoder rotation for menu navigation
   if (encoderCurrentRead > encoderLastRead) {
     currentItemIndex++;
 
-    if (currentItemIndex > totalMenuItems - 1) currentItemIndex = totalMenuItems - 1; // To avoid overflow index count
+    if (currentItemIndex > totalMenuItems - 1) currentItemIndex = totalMenuItems - 1; // Prevent overflow
 
     if (displaySelectedItemIndex < visibleItemsCount - 1) displaySelectedItemIndex++; // Move down in the currently visible items
     else if (displayStartItemIndex + 3 < totalMenuItems) displayStartItemIndex++;  // Scroll down the list
@@ -152,7 +152,7 @@ void highlightSelectedItem() {
   if (encoderLastRead > encoderCurrentRead) {
     currentItemIndex--;
 
-    if (currentItemIndex < 0) currentItemIndex = 0; // Set minimum limit to avoid overflow
+    if (currentItemIndex < 0) currentItemIndex = 0; // Prevent overflow
 
     if (displaySelectedItemIndex > 0) displaySelectedItemIndex--; // Move up in the currently visible items
     else if (displayStartItemIndex > 0) displayStartItemIndex--; // Scroll up the list
@@ -170,7 +170,7 @@ void drawMenu() {
   drawMenuList(); // Call the function to draw the list of menu items
   highlightSelectedItem(); // Call the function to highlight the selected item
 
-  // Footer
+  // Footer with verion info
   u8g2.drawHLine(0, 54, 128); // Draw a horizontal line at the footer
   u8g2.setFont(u8g2_font_minuteconsole_mr); // Set font for footer
   u8g2.drawStr(128 - (strlen(version) * 5), 63, version); // Draw the version information at the bottom right
