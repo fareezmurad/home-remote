@@ -2,11 +2,15 @@
 #include <U8g2lib.h>
 #include <Bounce2.h>
 #include <ESP32Encoder.h>
+#include <IRremoteESP8266.h>
+#include <IRsend.h>
+#include "IRCodes.h"
 
-// Define button pin numbers
+// Define pin numbers
 #define CLK 36
 #define DT 39
 #define SELECT_BUTTON 34
+#define IR_LED 27
 
 // Initialize the OLED display using the U8g2 library
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -17,6 +21,9 @@ ESP32Encoder rotaryEncoder;
 // Initialize button objects for handling button presses
 Bounce2::Button selectButton = Bounce2::Button();
 
+// Initialize the IRsend objects to send IR signals
+IRsend irsend(IR_LED); 
+
 // Version information for display
 const char* version = "v1.2";
 
@@ -26,11 +33,12 @@ struct MenuItem {
   void (*action)();
 };
 
+void dekaSpeedControl(int index); // calling the function to the top
 MenuItem dekaFanMenu[] = {
-  {"Off", nullptr, nullptr},
-  {"Speed 1", nullptr, nullptr},
-  {"Speed 2", nullptr, nullptr},
-  {"Speed 3", nullptr, nullptr},
+  {"Off", nullptr, []() { dekaSpeedControl(0); }},
+  {"Speed 1", nullptr, []() { dekaSpeedControl(1); }},
+  {"Speed 2", nullptr, []() { dekaSpeedControl(2); }},
+  {"Speed 3", nullptr, []() { dekaSpeedControl(3); }},
   {"Back", nullptr, nullptr}, // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
 };
@@ -170,9 +178,15 @@ void drawMenu() {
   u8g2.sendBuffer(); // Send the buffer to the display
 }
 
+// Function to send IR to Deka ceiling fan
+void dekaSpeedControl(int index) {
+  irsend.sendSymphony(fanDeka[index].code, fanDeka[index].bits, fanDeka[index].repeats); // code save in IRCodes.cpp
+}
+
 void setup() {
   Serial.begin(115200); // Initialize serial communication
   u8g2.begin(); // Initialize the OLED display
+  irsend.begin(); // Initialize the IR LED
 
   // Configure the rotary encoder
   rotaryEncoder.attachHalfQuad(DT, CLK);
