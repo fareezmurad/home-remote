@@ -26,7 +26,7 @@ struct MenuItem {
   void (*action)();
 };
 
-MenuItem dekaFanSpeed[] = {
+MenuItem dekaFanMenu[] = {
   {"Off", nullptr, nullptr},
   {"Speed 1", nullptr, nullptr},
   {"Speed 2", nullptr, nullptr},
@@ -36,7 +36,7 @@ MenuItem dekaFanSpeed[] = {
 };
 
 MenuItem irSendMenu[] = {
-  {"Deka Fan", dekaFanSpeed, nullptr},
+  {"Deka Fan", dekaFanMenu, nullptr},
   {"Sharp A/C", nullptr, nullptr},
   {"Daikin A/C", nullptr, nullptr},
   {"Back", nullptr, nullptr}, // Back button (ONLY FOR SUB-MENU)
@@ -72,12 +72,12 @@ int menuDepth = 0; // Current depth in the menu stack
 int encoderCurrentRead = 0;
 int encoderLastRead;
 
-// Variable to track the menu
-int selectedMenu = 0;
+// Variable to track the which menu index currently be highlight
+int currentItemIndex = 0;
 
-// Variables for tracking the currently selected item and starting index for scrolling
-int selectedItemIndex = 0; // Index of the currently selected item
-int startItemIndex = 0; // Track the starting index of the displayed menu items
+// Variables for tracking the currently selected item and starting index for /display/scrolling
+int displaySelectedItemIndex = 0; // Index of the currently selected item
+int displayStartItemIndex = 0; // Track the starting index of the displayed menu items
 
 // Function to draw the header
 void drawHeader(const char* header) {
@@ -92,72 +92,64 @@ void drawMenuList() {
   for (int i = 0; i < 3; i++) {
     int yPos = (i * 12) + 25;  // Calculate the y position for each menu item
     u8g2.setFont(u8g2_font_spleen6x12_mr); // Set font for menu items
-    u8g2.drawStr(1, yPos, currentMenu[startItemIndex + i].title); // Draw the menu item
+    u8g2.drawStr(1, yPos, currentMenu[displayStartItemIndex + i].title); // Draw the menu item
   }
 }
 
 // Function for select button behaviour
-void selectMenu() {
+void selectHighlightedMenu() {
   if (selectButton.pressed()) {
-    if (currentMenu[selectedMenu].action != nullptr) currentMenu[selectedMenu].action(); // Check if there is action or not
-    
-    else if (currentMenu[selectedMenu].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Check if there is a menu
+    if (currentMenu[currentItemIndex].action != nullptr) currentMenu[currentItemIndex].action(); // Check if there is action or not
+    else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Check if there is a menu
       // Push current menu onto the stack before entering submenu
       menuStack[menuDepth++] = currentMenu;
-      
-      currentMenu = currentMenu[selectedMenu].subMenu;
+      currentMenu = currentMenu[currentItemIndex].subMenu;
 
-      startItemIndex = 0;
-      selectedItemIndex = 0;
-      selectedMenu = 0;
+      displayStartItemIndex = 0;
+      displaySelectedItemIndex = 0;
+      currentItemIndex = 0;
     }
 
-    else if (selectedMenu == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) {
+    else if (currentItemIndex == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) {
       // "Back" option: Pop the previous menu from the stack
       currentMenu = menuStack[--menuDepth];
 
-      startItemIndex = 0;
-      selectedItemIndex = 0;
-      selectedMenu = 0;
+      displayStartItemIndex = 0;
+      displaySelectedItemIndex = 0;
+      currentItemIndex = 0;
     }
   }
 }
 
 // Function to highlight the selected menu item
 void highlightSelectedItem() {
-  int totalMenuItems = getMenuItemCount(currentMenu);
+  int totalMenuItems = getMenuItemCount(currentMenu); // Get total current menu count
 
-  const int visibleItemsCount = min(totalMenuItems - startItemIndex, 3); // Limit to the number of items being displayed
-  int yPos = (min(selectedItemIndex, 3) * 12) + 15; // Calculate y position for the highlighted item
+  const int visibleItemsCount = min(totalMenuItems - displayStartItemIndex, 3); // Limit to the number of items being displayed
+  int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15; // Calculate y position for the highlighted item
 
   u8g2.setDrawColor(2); // Set draw color for the highlight
   u8g2.drawBox(0, yPos, 128, 13); // Draw a box to highlight the selected item
 
   // Update the selected item index based on rotary encoder
   if (encoderCurrentRead > encoderLastRead) {
-    selectedMenu++;
-    if (selectedMenu > totalMenuItems - 1) selectedMenu = totalMenuItems - 1;
+    currentItemIndex++;
 
-    if (selectedItemIndex < visibleItemsCount - 1) {
-      selectedItemIndex++; // Move down in the currently visible items
-    } else if (startItemIndex + 3 < totalMenuItems) {
-      // If at the end of visible items and more items exist
-      startItemIndex++;  // Scroll down the list
-    }
+    if (currentItemIndex > totalMenuItems - 1) currentItemIndex = totalMenuItems - 1; // To avoid overflow index count
+
+    if (displaySelectedItemIndex < visibleItemsCount - 1) displaySelectedItemIndex++; // Move down in the currently visible items
+    else if (displayStartItemIndex + 3 < totalMenuItems) displayStartItemIndex++;  // Scroll down the list
   }
 
   if (encoderLastRead > encoderCurrentRead) {
-    selectedMenu--;
-    if (selectedMenu < 0) selectedMenu = 0;
+    currentItemIndex--;
 
-    if (selectedItemIndex > 0) {
-      selectedItemIndex--; // Move up in the currently visible items
-    } else if (startItemIndex > 0) {
-      // If at the top of visible items and more items above exist
-      startItemIndex--; // Scroll up the list
-    }
+    if (currentItemIndex < 0) currentItemIndex = 0; // Set minimum limit to avoid overflow
+
+    if (displaySelectedItemIndex > 0) displaySelectedItemIndex--; // Move up in the currently visible items
+    else if (displayStartItemIndex > 0) displayStartItemIndex--; // Scroll up the list
   }
-  selectMenu();
+  selectHighlightedMenu();
 }
 
 // Function to draw the entire menu screen
