@@ -71,10 +71,11 @@ int getMenuItemCount(MenuItem* menu) {
   return count;
 };
 
-// Track current menu state, menu history, and menu depth for nested menus
+// Track current menu state, menu history, header and menu depth for nested menus
 MenuItem* currentMenu = mainMenu;
 const int MAX_MENU_DEPTH = 10; // Max levels of menu nesting
 MenuItem* menuStack[MAX_MENU_DEPTH]; // Stack to store menu history
+const char* headerStack[MAX_MENU_DEPTH]; // Stack to store current and previous display header
 int menuDepth = 0; // Current depth in the menu stack
 
 // Track rotary encoder states
@@ -90,8 +91,11 @@ int displayStartItemIndex = 0; // Track the starting index of the displayed menu
 
 // Function to draw the header
 void drawHeader(const char* header) {
+  // Display "MAIN MENU" if at top level
+  if (header == 0) header = "MAIN MENU";
+
   u8g2.setFont(u8g2_font_spleen8x16_mr); // Set font for header
-  u8g2.drawStr(28, 10, header); // Draw the header text
+  u8g2.drawStr((128 - (strlen(header) * 8)) / 2, 10, header); // Draw the header text
   u8g2.drawHLine(0, 12, 128); // Draw a horizontal line below the header
 }
 
@@ -110,6 +114,7 @@ void selectHighlightedMenu() {
   if (selectButton.pressed()) {
     if (currentMenu[currentItemIndex].action != nullptr) currentMenu[currentItemIndex].action(); // Execute action if defined
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Enter sub-menu if defined
+      headerStack[menuDepth] = currentMenu[currentItemIndex].title; // Push current menu title onto the stack to update the header
       // Push current menu onto the stack before entering submenu
       menuStack[menuDepth++] = currentMenu;
       currentMenu = currentMenu[currentItemIndex].subMenu;
@@ -166,7 +171,7 @@ void drawMenu() {
   u8g2.setFontMode(1); // Set font mode
   u8g2.setBitmapMode(1); // Set bitmap mode
 
-  drawHeader("MAIN MENU"); // Call the function to draw the header
+  drawHeader(headerStack[menuDepth - 1]); // Call the function to draw the header
   drawMenuList(); // Call the function to draw the list of menu items
   highlightSelectedItem(); // Call the function to highlight the selected item
 
