@@ -32,34 +32,36 @@ struct MenuItem {
   const char* title;
   struct MenuItem* subMenu;
   void (*action)();
+  bool requireUpdateDisplay;
 };
 
 void dekaSpeedControl(int index); // Function declaration for deka fan control (Codes run from top to bottom)
 MenuItem dekaFanMenu[] = {
-  {"Off", nullptr, []() { dekaSpeedControl(0); }},
-  {"Speed 1", nullptr, []() { dekaSpeedControl(1); }},
-  {"Speed 2", nullptr, []() { dekaSpeedControl(2); }},
-  {"Speed 3", nullptr, []() { dekaSpeedControl(3); }},
-  {"Back", nullptr, nullptr}, // Back button (ONLY FOR SUB-MENU)
-  {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
+  {"Off", nullptr, []() { dekaSpeedControl(0); }, false},
+  {"Speed 1", nullptr, []() { dekaSpeedControl(1); }, false},
+  {"Speed 2", nullptr, []() { dekaSpeedControl(2); }, false},
+  {"Speed 3", nullptr, []() { dekaSpeedControl(3); }, false},
+  {"Back", nullptr, nullptr, false}, // Back button (ONLY FOR SUB-MENU)
+  {nullptr, nullptr, nullptr, false} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
 MenuItem irSendMenu[] = {
-  {"Deka Fan", dekaFanMenu, nullptr},
-  {"Sharp A/C", nullptr, nullptr},
-  {"Daikin A/C", nullptr, nullptr},
-  {"Back", nullptr, nullptr}, // Back button (ONLY FOR SUB-MENU)
-  {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
+  {"Deka Fan", dekaFanMenu, nullptr, false},
+  {"Sharp A/C", nullptr, nullptr, false},
+  {"Daikin A/C", nullptr, nullptr, false},
+  {"Back", nullptr, nullptr, false}, // Back button (ONLY FOR SUB-MENU)
+  {nullptr, nullptr, nullptr, false} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
+void underDevelopment(); // Function declaration
 // Define the menu items
 MenuItem mainMenu[] = {
-  {"Home Automation", nullptr, nullptr},
-  {"IR Sends", irSendMenu, nullptr},
-  {"QR Codes", nullptr, nullptr},
-  {"Information", nullptr, nullptr},
-  {"Exit", nullptr, nullptr},
-  {nullptr, nullptr, nullptr} // Count terminator. REQUIRED FOR EVERY MENU!
+  {"Home Automation", nullptr, nullptr, false},
+  {"IR Sends", irSendMenu, nullptr, false},
+  {"QR Codes", nullptr, underDevelopment, true},
+  {"Information", nullptr, nullptr, false},
+  {"Exit", nullptr, nullptr, false},
+  {nullptr, nullptr, nullptr, false} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
 // Function to calculate the number of menu items dynamically
@@ -89,6 +91,9 @@ int currentItemIndex = 0;
 int displaySelectedItemIndex = 0; // Index of the currently selected item
 int displayStartItemIndex = 0; // Track the starting index of the displayed menu items
 
+// Global flag to track if a non-menu screen is being displayed
+bool displayingScreen = false;
+
 // Function to draw the header
 void drawHeader(const char* header) {
   // Display "MAIN MENU" if at top level
@@ -112,7 +117,11 @@ void drawMenuList() {
 // Handle "select" button press for menu navigation
 void selectHighlightedMenu() {
   if (selectButton.pressed()) {
-    if (currentMenu[currentItemIndex].action != nullptr) currentMenu[currentItemIndex].action(); // Execute action if defined
+    if (currentMenu[currentItemIndex].action != nullptr) { // Execute action if defined
+      // Check if the action requires display update
+      if (currentMenu[currentItemIndex].requireUpdateDisplay)  displayingScreen = true; // Display oled code inside function
+      else currentMenu[currentItemIndex].action(); // Only execute code without display anything
+    }
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Enter sub-menu if defined
       headerStack[menuDepth] = currentMenu[currentItemIndex].title; // Push current menu title onto the stack to update the header
       // Push current menu onto the stack before entering submenu
@@ -171,16 +180,30 @@ void drawMenu() {
   u8g2.setFontMode(1); // Set font mode
   u8g2.setBitmapMode(1); // Set bitmap mode
 
-  drawHeader(headerStack[menuDepth - 1]); // Call the function to draw the header
-  drawMenuList(); // Call the function to draw the list of menu items
-  highlightSelectedItem(); // Call the function to highlight the selected item
-
-  // Footer with verion info
-  u8g2.drawHLine(0, 54, 128); // Draw a horizontal line at the footer
-  u8g2.setFont(u8g2_font_minuteconsole_mr); // Set font for footer
-  u8g2.drawStr(128 - (strlen(version) * 5), 63, version); // Draw the version information at the bottom right
+  if (displayingScreen) {
+    currentMenu[currentItemIndex].action();
+    if (selectButton.pressed()) displayingScreen = false;
+  }
+  else {
+    drawHeader(headerStack[menuDepth - 1]); // Call the function to draw the header
+    drawMenuList();
+    highlightSelectedItem();
+    
+    // Footer with verion info
+    u8g2.drawHLine(0, 54, 128); // Draw a horizontal line at the footer
+    u8g2.setFont(u8g2_font_minuteconsole_mr); // Set font for footer
+    u8g2.drawStr(128 - (strlen(version) * 5), 63, version); // Draw the version information at the bottom right
   
-  u8g2.sendBuffer(); // Send the buffer to the display
+    u8g2.sendBuffer(); // Send the buffer to the display
+  }
+}
+
+// Dummy function for testing
+void underDevelopment() {
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_6x13_tr);
+  u8g2.drawStr(13, 37, "Under Development");
+  u8g2.sendBuffer();
 }
 
 // Function to send IR to Deka ceiling fan
