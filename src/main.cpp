@@ -1,10 +1,12 @@
 #include <Arduino.h>
-#include <U8g2lib.h>
+
 #include <Bounce2.h>
 #include <ESP32Encoder.h>
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
+#include <U8g2lib.h>
 #include <ir_Sharp.h>
+
 #include "IRCodes.h"
 
 // Define pin numbers
@@ -27,12 +29,12 @@ IRsend irSend(IR_LED);
 IRSharpAc sharpAc(IR_LED);
 
 // Version info
-const char* version = "v1.3";
+const char *version = "v1.3";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
-  const char* title;
-  struct MenuItem* subMenu;
+  const char *title;
+  struct MenuItem *subMenu;
   void (*action)();
   bool requireUpdateDisplay;
 };
@@ -68,7 +70,7 @@ MenuItem mainMenu[] = {
 };
 
 // Function to calculate the number of menu items dynamically
-int getMenuItemCount(MenuItem* menu) {
+int getMenuItemCount(MenuItem *menu) {
   int count = 0;
   while (menu[count].title != nullptr) {
     count++;
@@ -77,11 +79,11 @@ int getMenuItemCount(MenuItem* menu) {
 };
 
 // Track current menu state, menu history, header and menu depth for nested menus
-MenuItem* currentMenu = mainMenu;
-const int MAX_MENU_DEPTH = 10; // Max levels of menu nesting
-MenuItem* menuStack[MAX_MENU_DEPTH]; // Stack to store menu history
-const char* headerStack[MAX_MENU_DEPTH]; // Stack to store current and previous display header
-int menuDepth = 0; // Current depth in the menu stack
+MenuItem *currentMenu = mainMenu;
+const int MAX_MENU_DEPTH = 10;           // Max levels of menu nesting
+MenuItem *menuStack[MAX_MENU_DEPTH];     // Stack to store menu history
+const char *headerStack[MAX_MENU_DEPTH]; // Stack to store current and previous display header
+int menuDepth = 0;                       // Current depth in the menu stack
 
 // Track rotary encoder states
 int encoderCurrentRead = 0;
@@ -92,27 +94,27 @@ int currentItemIndex = 0;
 
 // Track visible display menu indexes for scrolling
 int displaySelectedItemIndex = 0; // Index of the currently selected item
-int displayStartItemIndex = 0; // Track the starting index of the displayed menu items
+int displayStartItemIndex = 0;    // Track the starting index of the displayed menu items
 
 // Global flag to track if a non-menu screen is being displayed
 bool displayingScreen = false;
 
 // Function to draw the header
-void drawHeader(const char* header) {
+void drawHeader(const char *header) {
   // Display "MAIN MENU" if at top level
   if (header == 0) header = "MAIN MENU";
 
-  u8g2.setFont(u8g2_font_spleen8x16_mr); // Set font for header
+  u8g2.setFont(u8g2_font_spleen8x16_mr);                      // Set font for header
   u8g2.drawStr((128 - (strlen(header) * 8)) / 2, 10, header); // Draw the header text
-  u8g2.drawHLine(0, 12, 128); // Draw a horizontal line below the header
+  u8g2.drawHLine(0, 12, 128);                                 // Draw a horizontal line below the header
 }
 
 // Function to draw the list up to 3 menu items
 void drawMenuList() {
   // Draw up to 3 items based on the starting index
   for (int i = 0; i < 3; i++) {
-    int yPos = (i * 12) + 25;  // Calculate the y position for each menu item
-    u8g2.setFont(u8g2_font_spleen6x12_mr); // Set font for menu items
+    int yPos = (i * 12) + 25;                                            // Calculate the y position for each menu item
+    u8g2.setFont(u8g2_font_spleen6x12_mr);                               // Set font for menu items
     u8g2.drawStr(1, yPos, currentMenu[displayStartItemIndex + i].title); // Draw the menu item
   }
 }
@@ -123,10 +125,10 @@ void selectHighlightedMenu() {
     if (currentMenu[currentItemIndex].action != nullptr) { // Execute action if defined
       // Check if the action requires display update
       if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = true; // function require display to be updated
-      else currentMenu[currentItemIndex].action(); // Only execute code without requiring to update the display
-    }
+      else currentMenu[currentItemIndex].action();                                                  // Only execute code without requiring to update the display
+    } 
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Enter sub-menu if defined
-      headerStack[menuDepth] = currentMenu[currentItemIndex].title; // Push current menu title onto the stack to update the header
+      headerStack[menuDepth] = currentMenu[currentItemIndex].title;                              // Push current menu title onto the stack to update the header
       // Push current menu onto the stack before entering submenu
       menuStack[menuDepth++] = currentMenu;
       currentMenu = currentMenu[currentItemIndex].subMenu;
@@ -134,7 +136,7 @@ void selectHighlightedMenu() {
       displayStartItemIndex = 0;
       displaySelectedItemIndex = 0;
       currentItemIndex = 0;
-    }
+    } 
     else if (currentItemIndex == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) { // Go back if select 'back' option in sub-menu
       // "Back" option: Pop the previous menu from the stack
       currentMenu = menuStack[--menuDepth];
@@ -151,9 +153,9 @@ void highlightSelectedItem() {
   int totalMenuItems = getMenuItemCount(currentMenu); // Get total current menu count
 
   const int visibleItemsCount = min(totalMenuItems - displayStartItemIndex, 3); // Limit to the number of items being displayed
-  int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15; // Calculate y position for the highlighted item
+  int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15;                      // Calculate y position for the highlighted item
 
-  u8g2.setDrawColor(2); // Set draw color for the highlight
+  u8g2.setDrawColor(2);           // Set draw color for the highlight
   u8g2.drawBox(0, yPos, 128, 13); // Draw a box to highlight the selected item
 
   // Handle encoder rotation for menu navigation
@@ -163,7 +165,7 @@ void highlightSelectedItem() {
     if (currentItemIndex > totalMenuItems - 1) currentItemIndex = totalMenuItems - 1; // Prevent overflow
 
     if (displaySelectedItemIndex < visibleItemsCount - 1) displaySelectedItemIndex++; // Move down in the currently visible items
-    else if (displayStartItemIndex + 3 < totalMenuItems) displayStartItemIndex++;  // Scroll down the list
+    else if (displayStartItemIndex + 3 < totalMenuItems) displayStartItemIndex++; // Scroll down the list
   }
 
   if (encoderLastRead > encoderCurrentRead) {
@@ -179,24 +181,24 @@ void highlightSelectedItem() {
 
 // Function to draw the entire menu screen
 void drawMenu() {
-  u8g2.clearBuffer(); // Clear the display buffer
-  u8g2.setFontMode(1); // Set font mode
+  u8g2.clearBuffer();    // Clear the display buffer
+  u8g2.setFontMode(1);   // Set font mode
   u8g2.setBitmapMode(1); // Set bitmap mode
 
   if (displayingScreen) { // Check if function require to update the display
     currentMenu[currentItemIndex].action();
     if (selectButton.pressed()) displayingScreen = false;
-  }
+  } 
   else {
     drawHeader(headerStack[menuDepth - 1]);
     drawMenuList();
     highlightSelectedItem();
-    
+
     // Footer with version info
-    u8g2.drawHLine(0, 54, 128); // Draw a horizontal line at the footer
-    u8g2.setFont(u8g2_font_minuteconsole_mr); // Set font for footer
+    u8g2.drawHLine(0, 54, 128);                             // Draw a horizontal line at the footer
+    u8g2.setFont(u8g2_font_minuteconsole_mr);               // Set font for footer
     u8g2.drawStr(128 - (strlen(version) * 5), 63, version); // Draw the version information at the bottom right
-  
+
     u8g2.sendBuffer(); // Send the buffer to the display
   }
 }
@@ -215,7 +217,7 @@ void dekaSpeedControl(int index) {
 }
 
 // Function to send IR code to sharp AC
-void sharpAcControl(){
+void sharpAcControl() {
   if (!acState) {
     sharpAc.setMode(kSharpAcCool);
     sharpAc.setTemp(20);
@@ -233,8 +235,8 @@ void sharpAcControl(){
 
 void setup() {
   Serial.begin(115200); // Initialize serial communication
-  u8g2.begin(); // Initialize the OLED display
-  irSend.begin(); // Initialize the IR LED
+  u8g2.begin();         // Initialize the OLED display
+  irSend.begin();       // Initialize the IR LED
 
   // Configure the rotary encoder
   rotaryEncoder.attachHalfQuad(DT, CLK);
@@ -242,14 +244,14 @@ void setup() {
 
   // Configure the select button
   selectButton.attach(SELECT_BUTTON, INPUT);
-  selectButton.interval(5); // Set debounce interval
+  selectButton.interval(5);          // Set debounce interval
   selectButton.setPressedState(LOW); // Set pressed state for active-low logic
 }
 
 void loop() {
   // Obtain encoder read value
   encoderCurrentRead = rotaryEncoder.getCount();
-  
+
   // Update the button states
   selectButton.update();
 
