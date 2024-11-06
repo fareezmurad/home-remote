@@ -4,6 +4,7 @@
 #include <ESP32Encoder.h>
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
+#include <ir_Sharp.h>
 #include "IRCodes.h"
 
 // Define pin numbers
@@ -22,7 +23,8 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Initialize IR sender object for sending IR signals (IRremoteESP8266 library)
-IRsend irsend(IR_LED);
+IRsend irSend(IR_LED);
+IRSharpAc sharpAc(IR_LED);
 
 // Version info
 const char* version = "v1.3";
@@ -45,9 +47,11 @@ MenuItem dekaFanMenu[] = {
   {nullptr, nullptr, nullptr, false} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
+bool acState = false;
+void sharpAcControl();
 MenuItem irSendMenu[] = {
   {"Deka Fan", dekaFanMenu, nullptr, false},
-  {"Sharp A/C", nullptr, nullptr, false},
+  {"Sharp A/C", nullptr, sharpAcControl, false},
   {"Daikin A/C", nullptr, nullptr, false},
   {"Back", nullptr, nullptr, false}, // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false} // Count terminator. REQUIRED FOR EVERY MENU!
@@ -118,7 +122,7 @@ void selectHighlightedMenu() {
   if (selectButton.pressed()) {
     if (currentMenu[currentItemIndex].action != nullptr) { // Execute action if defined
       // Check if the action requires display update
-      if (currentMenu[currentItemIndex].requireUpdateDisplay)  displayingScreen = true; // function require display to be updated
+      if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = true; // function require display to be updated
       else currentMenu[currentItemIndex].action(); // Only execute code without requiring to update the display
     }
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Enter sub-menu if defined
@@ -207,13 +211,30 @@ void underDevelopment() {
 
 // Function to send IR to Deka ceiling fan
 void dekaSpeedControl(int index) {
-  irsend.sendSymphony(fanDeka[index].code, fanDeka[index].bits, fanDeka[index].repeats); // code save in IRCodes.cpp
+  irSend.sendSymphony(fanDeka[index].code, fanDeka[index].bits, fanDeka[index].repeats); // code save in IRCodes.cpp
+}
+
+// Function to send IR code to sharp AC
+void sharpAcControl(){
+  if (!acState) {
+    sharpAc.setMode(kSharpAcCool);
+    sharpAc.setTemp(20);
+    sharpAc.setFan(kSharpAcFanAuto);
+    sharpAc.on();
+    sharpAc.send();
+    acState = !acState;
+  } 
+  else {
+    sharpAc.off();
+    sharpAc.send();
+    acState = !acState;
+  }
 }
 
 void setup() {
   Serial.begin(115200); // Initialize serial communication
   u8g2.begin(); // Initialize the OLED display
-  irsend.begin(); // Initialize the IR LED
+  irSend.begin(); // Initialize the IR LED
 
   // Configure the rotary encoder
   rotaryEncoder.attachHalfQuad(DT, CLK);
