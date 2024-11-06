@@ -125,10 +125,10 @@ void selectHighlightedMenu() {
     if (currentMenu[currentItemIndex].action != nullptr) { // Execute action if defined
       // Check if the action requires display update
       if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = true; // function require display to be updated
-      else currentMenu[currentItemIndex].action();                                                  // Only execute code without requiring to update the display
+      else currentMenu[currentItemIndex].action(); // Only execute code without requiring to update the display
     } 
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Enter sub-menu if defined
-      headerStack[menuDepth] = currentMenu[currentItemIndex].title;                              // Push current menu title onto the stack to update the header
+      headerStack[menuDepth] = currentMenu[currentItemIndex].title; // Push current menu title onto the stack to update the header
       // Push current menu onto the stack before entering submenu
       menuStack[menuDepth++] = currentMenu;
       currentMenu = currentMenu[currentItemIndex].subMenu;
