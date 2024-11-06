@@ -12,22 +12,22 @@
 #define SELECT_BUTTON 34
 #define IR_LED 27
 
-// Initialize the OLED display (U8g2 library)
+// Initialize the OLED display object (U8g2 library)
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
-// Initialize the rotary encoder (ESP32Encoder library)
+// Initialize the rotary encoder object (ESP32Encoder library)
 ESP32Encoder rotaryEncoder;
 
 // Initialize button object for "select" button with debouncing (Bounce2 library)
 Bounce2::Button selectButton = Bounce2::Button();
 
-// Initialize IR sender object for sending IR signals
+// Initialize IR sender object for sending IR signals (IRremoteESP8266 library)
 IRsend irsend(IR_LED);
 
 // Version info
-const char* version = "v1.2";
+const char* version = "v1.3";
 
-// Menu item structure for title, optional submenu, and action
+// Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
   const char* title;
   struct MenuItem* subMenu;
@@ -35,7 +35,7 @@ struct MenuItem {
   bool requireUpdateDisplay;
 };
 
-void dekaSpeedControl(int index); // Function declaration for deka fan control (Codes run from top to bottom)
+void dekaSpeedControl(int index);
 MenuItem dekaFanMenu[] = {
   {"Off", nullptr, []() { dekaSpeedControl(0); }, false},
   {"Speed 1", nullptr, []() { dekaSpeedControl(1); }, false},
@@ -53,8 +53,7 @@ MenuItem irSendMenu[] = {
   {nullptr, nullptr, nullptr, false} // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
-void underDevelopment(); // Function declaration
-// Define the menu items
+void underDevelopment();
 MenuItem mainMenu[] = {
   {"Home Automation", nullptr, nullptr, false},
   {"IR Sends", irSendMenu, nullptr, false},
@@ -119,8 +118,8 @@ void selectHighlightedMenu() {
   if (selectButton.pressed()) {
     if (currentMenu[currentItemIndex].action != nullptr) { // Execute action if defined
       // Check if the action requires display update
-      if (currentMenu[currentItemIndex].requireUpdateDisplay)  displayingScreen = true; // Display oled code inside function
-      else currentMenu[currentItemIndex].action(); // Only execute code without display anything
+      if (currentMenu[currentItemIndex].requireUpdateDisplay)  displayingScreen = true; // function require display to be updated
+      else currentMenu[currentItemIndex].action(); // Only execute code without requiring to update the display
     }
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) { // Enter sub-menu if defined
       headerStack[menuDepth] = currentMenu[currentItemIndex].title; // Push current menu title onto the stack to update the header
@@ -180,16 +179,16 @@ void drawMenu() {
   u8g2.setFontMode(1); // Set font mode
   u8g2.setBitmapMode(1); // Set bitmap mode
 
-  if (displayingScreen) {
+  if (displayingScreen) { // Check if function require to update the display
     currentMenu[currentItemIndex].action();
     if (selectButton.pressed()) displayingScreen = false;
   }
   else {
-    drawHeader(headerStack[menuDepth - 1]); // Call the function to draw the header
+    drawHeader(headerStack[menuDepth - 1]);
     drawMenuList();
     highlightSelectedItem();
     
-    // Footer with verion info
+    // Footer with version info
     u8g2.drawHLine(0, 54, 128); // Draw a horizontal line at the footer
     u8g2.setFont(u8g2_font_minuteconsole_mr); // Set font for footer
     u8g2.drawStr(128 - (strlen(version) * 5), 63, version); // Draw the version information at the bottom right
