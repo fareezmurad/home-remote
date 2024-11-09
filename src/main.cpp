@@ -2,10 +2,7 @@
 
 #include <Bounce2.h>
 #include <ESP32Encoder.h>
-#include <IRremoteESP8266.h>
-#include <IRsend.h>
 #include <U8g2lib.h>
-#include <ir_Sharp.h>
 
 #include "IRCodes.h"
 
@@ -13,7 +10,6 @@
 #define CLK 36
 #define DT 39
 #define SELECT_BUTTON 34
-#define IR_LED 27
 
 // Initialize the OLED display object (U8g2 library)
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -24,12 +20,8 @@ ESP32Encoder rotaryEncoder;
 // Initialize button object for "select" button with debouncing (Bounce2 library)
 Bounce2::Button selectButton = Bounce2::Button();
 
-// Initialize IR sender object for sending IR signals (IRremoteESP8266 library)
-IRsend irSend(IR_LED);
-IRSharpAc sharpAc(IR_LED);
-
 // Version info
-const char *version = "v1.3";
+const char *version = "v1.31";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -39,34 +31,31 @@ struct MenuItem {
   bool requireUpdateDisplay;
 };
 
-void dekaSpeedControl(int index);
 MenuItem dekaFanMenu[] = {
-    {"Off", nullptr, []() { dekaSpeedControl(0); }, false},
-    {"Speed 1", nullptr, []() { dekaSpeedControl(1); }, false},
-    {"Speed 2", nullptr, []() { dekaSpeedControl(2); }, false},
-    {"Speed 3", nullptr, []() { dekaSpeedControl(3); }, false},
-    {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
-    {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
+  {"Off", nullptr, []() { dekaSpeedControl(0); }, false},
+  {"Speed 1", nullptr, []() { dekaSpeedControl(1); }, false},
+  {"Speed 2", nullptr, []() { dekaSpeedControl(2); }, false},
+  {"Speed 3", nullptr, []() { dekaSpeedControl(3); }, false},
+  {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
+  {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
-bool acState = false;
-void sharpAcControl();
 MenuItem irSendMenu[] = {
-    {"Deka Fan", dekaFanMenu, nullptr, false},
-    {"Sharp A/C", nullptr, sharpAcControl, false},
-    {"Daikin A/C", nullptr, nullptr, false},
-    {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
-    {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
+  {"Deka Fan", dekaFanMenu, nullptr, false},
+  {"Sharp A/C", nullptr, sharpAcControl, false},
+  {"Daikin A/C", nullptr, nullptr, false},
+  {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
+  {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
 void underDevelopment();
 MenuItem mainMenu[] = {
-    {"Home Automation", nullptr, nullptr, false},
-    {"IR Sends", irSendMenu, nullptr, false},
-    {"QR Codes", nullptr, underDevelopment, true},
-    {"Information", nullptr, nullptr, false},
-    {"Exit", nullptr, nullptr, false},
-    {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
+  {"Home Automation", nullptr, nullptr, false},
+  {"IR Sends", irSendMenu, nullptr, false},
+  {"QR Codes", nullptr, underDevelopment, true},
+  {"Information", nullptr, nullptr, false},
+  {"Exit", nullptr, nullptr, false},
+  {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
 // Function to calculate the number of menu items dynamically
@@ -207,31 +196,10 @@ void underDevelopment() {
   u8g2.sendBuffer();
 }
 
-// Function to send IR to Deka ceiling fan
-void dekaSpeedControl(int index) {
-  irSend.sendSymphony(fanDeka[index].code, fanDeka[index].bits, fanDeka[index].repeats);  // code save in IRCodes.cpp
-}
-
-// Function to send IR code to sharp AC
-void sharpAcControl() {
-  if (!acState) {
-    sharpAc.setMode(kSharpAcCool);
-    sharpAc.setTemp(20);
-    sharpAc.setFan(kSharpAcFanAuto);
-    sharpAc.on();
-    sharpAc.send();
-    acState = !acState;
-  } else {
-    sharpAc.off();
-    sharpAc.send();
-    acState = !acState;
-  }
-}
-
 void setup() {
   Serial.begin(115200);  // Initialize serial communication
   u8g2.begin();  // Initialize the OLED display
-  irSend.begin();  // Initialize the IR LED
+  initIrSend();  // Initialize the IR LED
 
   // Configure the rotary encoder
   rotaryEncoder.attachHalfQuad(DT, CLK);
