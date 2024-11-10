@@ -21,7 +21,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.4";
+const char *version = "v1.41";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -103,8 +103,17 @@ void drawHeader(const char *header) {
   // Display "MAIN MENU" if at top level
   if (header == 0) header = "MAIN MENU";
 
+  // Create a temporary buffer to hold the capitalized string
+  char headerUpper[strlen(header) + 1];
+  strcpy(headerUpper, header);  // Copy the input string to the buffer
+
+  // Convert each character to uppercase
+  for (int i = 0; headerUpper[i] != '\0'; i++) {
+    headerUpper[i] = toupper(headerUpper[i]);
+  }
+
   u8g2.setFont(u8g2_font_spleen8x16_mr);  // Set font for header
-  u8g2.drawStr((128 - (strlen(header) * 8)) / 2, 10, header);  // Draw the header text
+  u8g2.drawStr((128 - (strlen(headerUpper) * 8)) / 2, 10, headerUpper);  // Draw the capitalized header text
   u8g2.drawHLine(0, 12, 128);  // Draw a horizontal line below the header
 }
 
