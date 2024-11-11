@@ -11,21 +11,13 @@ const uint8_t IR_LED = 27;
 IRsend irSend(IR_LED);
 IRSharpAc sharpAc(IR_LED);
 
-// Temperature, fan settings, and swing state
-int setTemp = 20;  // Initial temperature
-
-int setFanIndex = 0;  // Initial fan speed index
-// Fan speed modes (used for Sharp AC)
-const uint8_t setFan[5] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanHigh, kSharpAcFanMax};
-// Display labels for fan modes
-const char* fanLabels[] = {"Auto", "Min", "Med", "High", "Max"};
-
-bool setSwing = true;  // Swing state (On/Off)
-// Function to get the string representation of swing state
-const char* getSwingString(bool swing) {
-  return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
+// Function to initialize the IR sender
+void initIrSend() {
+  irSend.begin();
+  sharpAc.begin();
 }
 
+/*---------------------------DEKA FAN---------------------------*/
 // Array of SymphonyCode for controlling Deka fan speeds
 SymphonyCode fanDeka[] = {
   {0xD80, 12, 3},  // Fan off
@@ -34,30 +26,21 @@ SymphonyCode fanDeka[] = {
   {0xD82, 12, 3}  // Speed 3
 };
 
-// Function to initialize the IR sender
-void initIrSend() {
-  irSend.begin();
-  sharpAc.begin();
-}
-
 // Function to send IR command for Deka fan speed based on selected index
 void dekaSpeedControl(int index) {
   irSend.sendSymphony(fanDeka[index].code, fanDeka[index].bits, fanDeka[index].repeats);
 }
 
-// Functions to control Sharp AC power state
-void sharpAcSetOn() {
-  sharpAc.setTemp(setTemp);  // Set the current temperature
-  sharpAc.setFan(setFan[setFanIndex]);  // Set fan to selected mode
-  sharpAc.setMode(kSharpAcCool);  // Set AC mode to cooling
-  sharpAc.setSwingToggle(setSwing);  // Set swing mode
-  sharpAc.on();  // Turn the AC on
-  sharpAc.send();  // Transmit the IR command
-}
+/*-------------------------SHARP AIR-CONDITIONER-------------------------*/
+int setTemp = 20;  // Initial temperature
 
-void sharpAcSetOff() {
-  sharpAc.off();  // Turn the AC off
-  sharpAc.send();  // Transmit the IR command
+int setFanIndex = 0;  // Initial fan speed index
+const uint8_t setFan[5] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanHigh, kSharpAcFanMax};
+const char* fanLabels[] = {"Auto", "Min", "Med", "High", "Max"};
+
+bool setSwing = true;  // Swing state (On/Off)
+const char* getSwingString(bool swing) {
+  return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
 }
 
 // Common UI rendering function for displaying temperature, fan speed, and swing status
@@ -78,6 +61,21 @@ void sharpAcUI() {
   u8g2.drawStr(38, 61, "Swing:");
   u8g2.drawStr(78, 61, getSwingString(setSwing));
   u8g2.sendBuffer();
+}
+
+// Functions to control Sharp AC power state
+void sharpAcSetOn() {
+  sharpAc.setTemp(setTemp);  // Set the current temperature
+  sharpAc.setFan(setFan[setFanIndex]);  // Set fan to selected mode
+  sharpAc.setMode(kSharpAcCool);  // Set AC mode to cooling
+  sharpAc.setSwingToggle(setSwing);  // Set swing mode
+  sharpAc.on();  // Turn the AC on
+  sharpAc.send();  // Transmit the IR command
+}
+
+void sharpAcSetOff() {
+  sharpAc.off();  // Turn the AC off
+  sharpAc.send();  // Transmit the IR command
 }
 
 // Functions to adjust AC settings based on encoder input
