@@ -42,6 +42,7 @@ void inputEncoder(uint8_t& value, int min, int max) {
     resetTimer();
   }
 }
+
 // Adjust encoder-controlled value for toggling only
 void toggleEncoder(bool& state) {
   if (encoderCurrentRead > encoderLastRead) {
@@ -125,6 +126,7 @@ void sharpAcChkInactivity() {
     sharpAc.setMode(kSharpAcCool);
     sharpAc.setSwingToggle(sharpSetSwing);
     sharpAc.send();
+    irSignalSent = true;
   }
 }
 
