@@ -5,6 +5,7 @@
 #include <U8g2lib.h>
 
 #include "IRCodes.h"
+#include "Info.h"
 
 // Define pin numbers
 #define CLK 36
@@ -21,7 +22,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.52";
+const char *version = "v1.60";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -72,8 +73,8 @@ void underDevelopment();
 MenuItem mainMenu[] = {
   {"Home Automation", nullptr, nullptr, false},
   {"IR Sends", irSendMenu, nullptr, false},
-  {"QR Codes", nullptr, underDevelopment, true},
-  {"Information", nullptr, nullptr, false},
+  {"QR Codes", nullptr, displayQr, true},
+  {"Information", nullptr, displayInfo, true},
   {"Exit", nullptr, nullptr, false},
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
