@@ -198,8 +198,8 @@ void daikinAcUI() {
 // Function to hold Daikin AC set value
 void daikinAcSetting() {
   daikinAc.setTemp(daikinSetTemp);
-  daikinAc.setMode(daikinSetMode[1]);
-  daikinAc.setFan(daikinSetFan[1]);
+  daikinAc.setMode(daikinSetMode[daikinSetModeIndex]);
+  daikinAc.setFan(daikinSetFan[daikinSetFanIndex]);
   daikinAc.setSwingVertical(daikinSetSwing);
 }
 
