@@ -169,7 +169,15 @@ const char* daikinGetSwingString(bool swing) {
   return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
 }
 
+void validateFanMode() {
+  static uint8_t lastModeIndex = 255;
+  if (daikinSetModeIndex == 2 && lastModeIndex != 2 && (daikinSetFanIndex < 2 || daikinSetFanIndex > 4)) daikinSetFanIndex = 2;
+  lastModeIndex = daikinSetModeIndex;
+}
+
 void daikinAcUI() {
+  validateFanMode();
+
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", daikinSetTemp);  // Convert temperature to string
 
@@ -235,7 +243,13 @@ void daikinAcSetModeUI() {
 }
 
 // Select Daikin AC fan mode
-void daikinAcSetFan() { inputEncoder(daikinSetFanIndex, 0, 5); }
+void daikinAcSetFan() {
+  // Update fan index with encoder input, and limit available range in Fan mode (2-4)
+  if (daikinSetModeIndex == 2)
+    inputEncoder(daikinSetFanIndex, 2, 4);  // Constrain the fan index to Min (2) to Max (4) in Fan mode
+  else
+    inputEncoder(daikinSetFanIndex, 0, 5);  // In other modes, the full range of fan speeds (0-5) is allowed
+}
 void daikinAcSetFanUI() {
   daikinAcSetFan();
   daikinAcUI();
