@@ -21,10 +21,19 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
- 
+
+void printWiFiState() {
+  if (WiFi.getMode() == WIFI_OFF) {
+    Serial.println("Wi-Fi is OFF");
+  } else {
+    Serial.println("Wi-Fi is ON");
+  }
+}
+
 void initESPNow() {
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
+  printWiFiState();
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
@@ -35,34 +44,46 @@ void initESPNow() {
   // Once ESPNow is successfully Init, we will register for Send CB to
   // get the status of Transmitted packet
   esp_now_register_send_cb(OnDataSent);
-  
+
   // Register peer
   memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
+  peerInfo.channel = 0;
   peerInfo.encrypt = false;
-  
-  // Add peer        
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+
+  // Add peer
+  if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     Serial.println("Failed to add peer");
     return;
   }
 }
- 
+
+void deInitESPNow() {
+  if (esp_now_deinit() == ESP_OK) {
+    Serial.println("ESP-NOW de-initialized");
+    WiFi.mode(WIFI_OFF);
+    printWiFiState();
+  } else {
+    Serial.println("Error de-initializing ESP-NOW");
+  }
+}
+
 void sendData() {
+  initESPNow();
+
   int buttonState = digitalRead(SELECT_BUTTON);
   // Set values to send
   myData.ledState = buttonState;
 
   if (buttonState == LOW) {
     // Send message via ESP-NOW
-    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-    
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&myData, sizeof(myData));
+
     if (result == ESP_OK) {
       Serial.println("Sent with success");
-    }
-    else {
+      deInitESPNow();
+    } else {
       Serial.println("Error sending the data");
     }
-    delay(500);
+    delay(100);
   }
 }
