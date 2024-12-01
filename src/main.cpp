@@ -6,6 +6,7 @@
 
 #include "IRCodes.h"
 #include "Info.h"
+#include "ESPNOW.h"
 
 // Define pin numbers
 #define CLK 36
@@ -71,7 +72,7 @@ MenuItem irSendMenu[] = {
 
 void underDevelopment();
 MenuItem mainMenu[] = {
-  {"Home Automation", nullptr, nullptr, false},
+  {"Home Automation", nullptr, sendData, false},
   {"IR Sends", irSendMenu, nullptr, false},
   {"QR Codes", nullptr, displayQr, true},
   {"Information", nullptr, displayInfo, true},
@@ -230,6 +231,7 @@ void setup() {
   Serial.begin(115200);  // Initialize serial communication
   u8g2.begin();  // Initialize the OLED display
   initIrSend();  // Initialize the IR LED
+  initESPNow();
 
   // Configure the rotary encoder
   rotaryEncoder.attachHalfQuad(DT, CLK);
