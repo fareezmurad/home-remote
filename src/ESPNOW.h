@@ -4,7 +4,6 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-void initESPNow();
 void sendData();
 
 #endif
