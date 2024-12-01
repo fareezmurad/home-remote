@@ -23,7 +23,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.61";
+const char *version = "v1.71";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -70,9 +70,18 @@ MenuItem irSendMenu[] = {
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
+MenuItem homeAutomationMenu[] = {
+  {"Switch 1", nullptr, sendData, false},
+  {"Switch 2", nullptr, nullptr, false},
+  {"Switch 3", nullptr, nullptr, false},
+  {"Switch 4", nullptr, nullptr, false},
+  {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
+  {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
+};
+
 void underDevelopment();
 MenuItem mainMenu[] = {
-  {"Home Automation", nullptr, sendData, false},
+  {"Home Automation", homeAutomationMenu, nullptr, false},
   {"IR Sends", irSendMenu, nullptr, false},
   {"QR Codes", nullptr, displayQr, true},
   {"Information", nullptr, displayInfo, true},
