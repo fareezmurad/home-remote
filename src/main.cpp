@@ -9,9 +9,9 @@
 #include "ESPNOW.h"
 
 // Define pin numbers
-#define CLK 36
-#define DT 39
-#define SELECT_BUTTON 34
+#define CLK 27
+#define DT 25
+#define SELECT_BUTTON 32
 
 // Initialize the OLED display object (U8g2 library)
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -71,10 +71,10 @@ MenuItem irSendMenu[] = {
 };
 
 MenuItem homeAutomationMenu[] = {
-  {"Switch 1", nullptr, sendData, false},
-  {"Switch 2", nullptr, nullptr, false},
-  {"Switch 3", nullptr, nullptr, false},
-  {"Switch 4", nullptr, nullptr, false},
+  {"Switch 1", nullptr, sendDataSwitch1, false},
+  {"Switch 2", nullptr, sendDataSwitch2, false},
+  {"Switch 3", nullptr, sendDataSwitch3, false},
+  {"Switch 4", nullptr, sendDataSwitch4, false},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };

@@ -6,7 +6,7 @@
 #include <ir_Sharp.h>
 
 // Pin configuration for IR LED
-const uint8_t IR_LED = 27;
+const uint8_t IR_LED = 17;
 
 // Instances for sending IR signals
 IRsend irSend(IR_LED);

@@ -4,6 +4,9 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-void sendData();
+void sendDataSwitch1();
+void sendDataSwitch2();
+void sendDataSwitch3();
+void sendDataSwitch4();
 
 #endif
