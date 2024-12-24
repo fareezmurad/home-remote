@@ -107,5 +107,5 @@ void sendDataSwitch3() {
 
 void sendDataSwitch4() {
   initESPNow();
-  sendSwitchData(switch3);
+  sendSwitchData(switch4);
 }
