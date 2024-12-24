@@ -3,7 +3,7 @@
 #define SELECT_BUTTON 32
 
 // REPLACE WITH YOUR RECEIVER MAC Address
-uint8_t broadcastAddress[] = {0x10, 0x06, 0x1C, 0xB5, 0x43, 0xE0};
+uint8_t broadcastAddress[] = {0xCC, 0xDB, 0xA7, 0x2E, 0x0E, 0x14};
 
 // Structure example to send data
 // Must match the receiver structure
