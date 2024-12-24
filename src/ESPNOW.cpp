@@ -5,17 +5,12 @@
 // REPLACE WITH YOUR RECEIVER MAC Address
 uint8_t broadcastAddress[] = {0xCC, 0xDB, 0xA7, 0x2E, 0x0E, 0x14};
 
-// Structure example to send data
-// Must match the receiver structure
+// Structure to send data
 typedef struct struct_message {
-  bool toggleSwitch;
+  bool toggleSwitch[4];  // Control 4 LEDs
 } struct_message;
 
-// Create a struct_message called myData
-struct_message switch1;
-struct_message switch2;
-struct_message switch3;
-struct_message switch4;
+struct_message switchData;
 
 esp_now_peer_info_t peerInfo;
 
@@ -70,15 +65,15 @@ void deInitESPNow() {
   }
 }
 
-void sendSwitchData(struct_message &switchObj) {
+void sendSwitchData(int switchIndex) {
   int buttonState = digitalRead(SELECT_BUTTON);
 
   if (buttonState == LOW) {
-    // Set the toggleSwitch value
-    switchObj.toggleSwitch = buttonState;
+    // Toggle the corresponding switch state
+    switchData.toggleSwitch[switchIndex] = !switchData.toggleSwitch[switchIndex];
 
     // Send message via ESP-NOW
-    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&switchObj, sizeof(switchObj));
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&switchData, sizeof(switchData));
 
     if (result == ESP_OK) {
       Serial.println("Sent with success");
@@ -92,20 +87,20 @@ void sendSwitchData(struct_message &switchObj) {
 
 void sendDataSwitch1() {
   initESPNow();
-  sendSwitchData(switch1);
+  sendSwitchData(0);
 }
 
 void sendDataSwitch2() {
   initESPNow();
-  sendSwitchData(switch2);
+  sendSwitchData(1);
 }
 
 void sendDataSwitch3() {
   initESPNow();
-  sendSwitchData(switch3);
+  sendSwitchData(2);
 }
 
 void sendDataSwitch4() {
   initESPNow();
-  sendSwitchData(switch4);
+  sendSwitchData(3);
 }
