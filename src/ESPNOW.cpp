@@ -1,5 +1,7 @@
 #include "ESPNOW.h"
 
+#include <Preferences.h>
+
 #define SELECT_BUTTON 32
 
 // REPLACE WITH YOUR RECEIVER MAC Address
@@ -12,12 +14,31 @@ typedef struct struct_message {
 
 struct_message switchData;
 
+// Preferences for NVS storage
+Preferences preferences;
+
 esp_now_peer_info_t peerInfo;
 
 // callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+}
+
+void saveToggleStates() {
+  preferences.begin("toggle-states", false);  // Open NVS
+  for (int i = 0; i < 4; i++) {
+    preferences.putBool((String("switch") + i).c_str(), switchData.toggleSwitch[i]);  // Convert String to const char*
+  }
+  preferences.end();  // Close NVS
+}
+
+void loadToggleStates() {
+  preferences.begin("toggle-states", true);  // Open NVS in read-only mode
+  for (int i = 0; i < 4; i++) {
+    switchData.toggleSwitch[i] = preferences.getBool((String("switch") + i).c_str(), false);  // Convert String to const char*
+  }
+  preferences.end();  // Close NVS
 }
 
 void printWiFiState() {
@@ -71,6 +92,9 @@ void sendSwitchData(int switchIndex) {
   if (buttonState == LOW) {
     // Toggle the corresponding switch state
     switchData.toggleSwitch[switchIndex] = !switchData.toggleSwitch[switchIndex];
+
+    // Save states to NVS
+    saveToggleStates();
 
     // Send message via ESP-NOW
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&switchData, sizeof(switchData));

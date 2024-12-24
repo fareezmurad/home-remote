@@ -240,6 +240,7 @@ void setup() {
   Serial.begin(115200);  // Initialize serial communication
   u8g2.begin();  // Initialize the OLED display
   initIrSend();  // Initialize the IR LED
+  loadToggleStates();
 
   // Configure the rotary encoder
   rotaryEncoder.attachHalfQuad(DT, CLK);
