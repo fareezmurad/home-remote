@@ -4,7 +4,7 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-void loadToggleStates();
+void dataUpdateOnStartup();
 void sendDataSwitch1();
 void sendDataSwitch2();
 void sendDataSwitch3();

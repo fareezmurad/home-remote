@@ -23,7 +23,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.73";
+const char *version = "v1.74";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -240,7 +240,7 @@ void setup() {
   Serial.begin(115200);  // Initialize serial communication
   u8g2.begin();  // Initialize the OLED display
   initIrSend();  // Initialize the IR LED
-  loadToggleStates();
+  dataUpdateOnStartup();  // Update Home Automation Data
 
   // Configure the rotary encoder
   rotaryEncoder.attachHalfQuad(DT, CLK);
