@@ -28,6 +28,7 @@ void sharpAcSetOn();
 void sharpAcSetOff();
 void sharpAcSetTempUI();
 void sharpAcSetFanUI();
+void sharpAcSetModeUI();
 void sharpAcSetSwingUI();
 void sharpAcChkInactivity();
 

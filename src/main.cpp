@@ -23,7 +23,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.741";
+const char *version = "v1.75";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -44,6 +44,7 @@ MenuItem dekaFanMenu[] = {
 
 MenuItem sharpAcMenu[] = {
   {"On", nullptr, sharpAcSetOn, false},
+  {"Mode", nullptr, sharpAcSetModeUI, true},
   {"Temperature", nullptr, sharpAcSetTempUI, true},
   {"Fan Mode", nullptr, sharpAcSetFanUI, true},
   {"Swing", nullptr, sharpAcSetSwingUI, true},

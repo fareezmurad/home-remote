@@ -55,6 +55,12 @@ void toggleEncoder(bool& state) {
   }
 }
 
+// Bitmap for temperature indicator
+static const unsigned char celcius_bits[] U8X8_PROGMEM = {
+  0x38, 0x00, 0x44, 0x40, 0xd4, 0xa0, 0x54, 0x40, 0xd4, 0x1c, 0x54,
+  0x06, 0xd4, 0x02, 0x54, 0x02, 0x54, 0x06, 0x92, 0x1c, 0x39, 0x01,
+  0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
+
 /*---------------------------DEKA FAN---------------------------*/
 // Array of SymphonyCode for controlling Deka fan speeds
 SymphonyCode fanDeka[] = {
@@ -72,16 +78,25 @@ void dekaSpeedControl(int index) {
 /*-------------------------SHARP AIR-CONDITIONER-------------------------*/
 uint8_t sharpSetTemp = 20;  // Initial temperature
 
+uint8_t sharpSetModeIndex = 0;  // Initial AC mode
+const uint8_t sharpSetMode[3] = {kSharpAcFan, kSharpAcDry, kSharpAcCool};
+const char* sharpSetModeLabel[3] = {"Auto", "Dry", "Cool"};
 uint8_t sharpSetFanIndex = 0;  // Initial fan speed index
 const uint8_t sharpSetFan[5] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanHigh, kSharpAcFanMax};
-const char* sharpFanLabel[] = {"Auto", "Min", "Med", "High", "Max"};
+const char* sharpSetFanLabel[] = {"Auto", "Min", "Med", "High", "Max"};
 
 bool sharpSetSwing = true;  // Swing state (On/Off)
 const char* sharpGetSwingString(bool swing) {
   return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
 }
 
-// Common UI rendering function for displaying temperature, fan speed, and swing status
+// Fan always set to auto whenever mode changed
+void sharpValidateFanMode() {
+  static uint8_t lastModeIndex = 0;
+  if (sharpSetModeIndex != lastModeIndex) sharpSetFanIndex = 0;
+  lastModeIndex = sharpSetModeIndex;
+}
+
 void sharpAcUI() {
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string
@@ -90,14 +105,19 @@ void sharpAcUI() {
   u8g2.setFontMode(1);
   u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_profont29_tr);
-  u8g2.drawStr(38, 41, tempStr);
-  u8g2.setFont(u8g2_font_profont22_tr);
-  u8g2.drawStr(78, 41, "C");
+  u8g2.drawStr(2, 41, tempStr);
+  u8g2.drawXBMP(36, 22, 16, 16, celcius_bits);
   u8g2.setFont(u8g2_font_profont11_tr);
-  u8g2.drawStr(38, 7, "Fan:");
-  u8g2.drawStr(66, 7, sharpFanLabel[sharpSetFanIndex]);
-  u8g2.drawStr(38, 61, "Swing:");
-  u8g2.drawStr(78, 61, sharpGetSwingString(sharpSetSwing));
+  u8g2.drawStr(63, 14, "Mode:");
+  u8g2.drawStr(97, 14, sharpSetModeLabel[sharpSetModeIndex]);
+  u8g2.drawRFrame(56, 0, 72, 22, 4);
+  u8g2.drawStr(63, 35, "Fan:");
+  u8g2.drawStr(95, 35, sharpSetFanLabel[sharpSetFanIndex]);
+  u8g2.drawRFrame(56, 21, 72, 22, 4);
+  u8g2.drawStr(63, 57, "Swing:");
+  u8g2.drawStr(103, 57, sharpGetSwingString(sharpSetSwing));
+  u8g2.drawRFrame(56, 42, 72, 22, 4);
+  u8g2.setDrawColor(1);
   u8g2.sendBuffer();
 
   sharpAcChkInactivity();  // Send IR signal if there is no input
@@ -107,7 +127,7 @@ void sharpAcUI() {
 void sharpAcSetOn() {
   sharpAc.setTemp(sharpSetTemp);  // Set the current temperature
   sharpAc.setFan(sharpSetFan[sharpSetFanIndex]);  // Set fan to selected mode
-  sharpAc.setMode(kSharpAcCool);  // Set AC mode to cooling
+  sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);  // Set AC mode to cooling
   sharpAc.setSwingToggle(sharpSetSwing);  // Set swing mode
   sharpAc.on();  // Turn the AC on
   sharpAc.send();  // Transmit the IR command
@@ -123,7 +143,7 @@ void sharpAcChkInactivity() {
   if (!irSignalSent && millis() - lastInputTime >= inactivityDuration) {
     sharpAc.setTemp(sharpSetTemp);
     sharpAc.setFan(sharpSetFan[sharpSetFanIndex]);
-    sharpAc.setMode(kSharpAcCool);
+    sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);
     sharpAc.setSwingToggle(sharpSetSwing);
     sharpAc.send();
     irSignalSent = true;
@@ -137,10 +157,26 @@ void sharpAcSetTempUI() {
   sharpAcUI();
 }
 
-// Change fan speed within valid range (index 0-4)
-void sharpAcSetFan() { inputEncoder(sharpSetFanIndex, 0, 4); }
+// Change fan speed based on current AC mode
+void sharpAcSetFan() {
+  if (sharpSetModeIndex == 1) {
+    inputEncoder(sharpSetFanIndex, 0, 0);
+  } else {
+    inputEncoder(sharpSetFanIndex, 0, 4);
+  }
+}
 void sharpAcSetFanUI() {
   sharpAcSetFan();  // Update fan setting
+  sharpAcUI();
+}
+
+// Change mode within valid range (index 0-2)
+void sharpAcSetMode() {
+  inputEncoder(sharpSetModeIndex, 0, 2);
+  sharpValidateFanMode();
+}
+void sharpAcSetModeUI() {
+  sharpAcSetMode();  // Update mode setting
   sharpAcUI();
 }
 
@@ -152,31 +188,26 @@ void sharpAcSetSwingUI() {
 }
 
 /*-------------------------DAIKIN AIR-CONDITIONER-------------------------*/
-static const unsigned char celcius_bits[] U8X8_PROGMEM = {
-  0x38, 0x00, 0x44, 0x40, 0xd4, 0xa0, 0x54, 0x40, 0xd4, 0x1c, 0x54,
-  0x06, 0xd4, 0x02, 0x54, 0x02, 0x54, 0x06, 0x92, 0x1c, 0x39, 0x01,
-  0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
-
 uint8_t daikinSetTemp = 24;  // Set initial temperature
 uint8_t daikinSetModeIndex = 1;  // Set initial AC mode
 const uint8_t daikinSetMode[3] = {kDaikin64Dry, kDaikin64Cool, kDaikin64Fan};
 const char* daikinSetModeLabel[3] = {"Dry", "Cool", "Fan"};
 uint8_t daikinSetFanIndex = 1;  // Set initial Fan mode
 const uint8_t daikinSetFan[6] = {kDaikin64FanQuiet, kDaikin64FanAuto, kDaikin64FanLow, kDaikin64FanMed, kDaikin64FanHigh, kDaikin64FanTurbo};
-const char* daikinSetFanlabel[6] = {"Quiet", "Auto", "Min", "Med", "Max", "Turbo"};
+const char* daikinSetFanLabel[6] = {"Quiet", "Auto", "Min", "Med", "Max", "Turbo"};
 bool daikinSetSwing = false;  // Set initial swing mode
 const char* daikinGetSwingString(bool swing) {
   return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
 }
 
-void validateFanMode() {
+void DaikinValidateFanMode() {
   static uint8_t lastModeIndex = 255;
   if (daikinSetModeIndex == 2 && lastModeIndex != 2 && (daikinSetFanIndex < 2 || daikinSetFanIndex > 4)) daikinSetFanIndex = 2;
   lastModeIndex = daikinSetModeIndex;
 }
 
 void daikinAcUI() {
-  validateFanMode();
+  DaikinValidateFanMode();
 
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", daikinSetTemp);  // Convert temperature to string
@@ -192,7 +223,7 @@ void daikinAcUI() {
   u8g2.drawStr(97, 14, daikinSetModeLabel[daikinSetModeIndex]);
   u8g2.drawRFrame(56, 0, 72, 22, 4);
   u8g2.drawStr(63, 35, "Fan:");
-  u8g2.drawStr(95, 35, daikinSetFanlabel[daikinSetFanIndex]);
+  u8g2.drawStr(95, 35, daikinSetFanLabel[daikinSetFanIndex]);
   u8g2.drawRFrame(56, 21, 72, 22, 4);
   u8g2.drawStr(63, 57, "Swing:");
   u8g2.drawStr(103, 57, daikinGetSwingString(daikinSetSwing));
