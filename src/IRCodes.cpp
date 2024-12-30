@@ -127,7 +127,7 @@ void sharpAcUI() {
 void sharpAcSetOn() {
   sharpAc.setTemp(sharpSetTemp);  // Set the current temperature
   sharpAc.setFan(sharpSetFan[sharpSetFanIndex]);  // Set fan to selected mode
-  sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);  // Set AC mode to cooling
+  sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);  // Set AC mode to selected mode
   sharpAc.setSwingToggle(sharpSetSwing);  // Set swing mode
   sharpAc.on();  // Turn the AC on
   sharpAc.send();  // Transmit the IR command
