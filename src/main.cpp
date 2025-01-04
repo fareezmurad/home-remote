@@ -44,7 +44,7 @@ MenuItem dekaFanMenu[] = {
 
 MenuItem sharpAcMenu[] = {
   {"On", nullptr, sharpAcSetOn, false},
-  {"Mode", nullptr, sharpAcSetModeUI, true},
+  {"AC Mode", nullptr, sharpAcSetModeUI, true},
   {"Temperature", nullptr, sharpAcSetTempUI, true},
   {"Fan Mode", nullptr, sharpAcSetFanUI, true},
   {"Swing", nullptr, sharpAcSetSwingUI, true},
@@ -55,8 +55,8 @@ MenuItem sharpAcMenu[] = {
 
 MenuItem daikinAcMenu[] = {
   {"Power Toggle", nullptr, daikinAcToggleOn, false},
-  {"Temperature", nullptr, daikinAcSetTempUI, true},
   {"AC Mode", nullptr, daikinAcSetModeUI, true},
+  {"Temperature", nullptr, daikinAcSetTempUI, true},
   {"Fan Mode", nullptr, daikinAcSetFanUI, true},
   {"Swing", nullptr, daikinAcSetSwingUI, true},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
