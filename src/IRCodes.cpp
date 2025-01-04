@@ -91,7 +91,7 @@ const char* sharpGetSwingString(bool swing) {
 }
 
 // Fan always set to auto whenever mode changed
-void sharpValidateFanMode() {
+void sharpValidateFanSetting() {
   static uint8_t lastModeIndex = 0;
   if (sharpSetModeIndex != lastModeIndex) sharpSetFanIndex = 0;
   lastModeIndex = sharpSetModeIndex;
@@ -173,7 +173,7 @@ void sharpAcSetFanUI() {
 // Change mode within valid range (index 0-2)
 void sharpAcSetMode() {
   inputEncoder(sharpSetModeIndex, 0, 2);
-  sharpValidateFanMode();
+  sharpValidateFanSetting();
 }
 void sharpAcSetModeUI() {
   sharpAcSetMode();  // Update mode setting
@@ -189,26 +189,26 @@ void sharpAcSetSwingUI() {
 
 /*-------------------------DAIKIN AIR-CONDITIONER-------------------------*/
 uint8_t daikinSetTemp = 24;  // Set initial temperature
+
 uint8_t daikinSetModeIndex = 1;  // Set initial AC mode
 const uint8_t daikinSetMode[3] = {kDaikin64Dry, kDaikin64Cool, kDaikin64Fan};
 const char* daikinSetModeLabel[3] = {"Dry", "Cool", "Fan"};
 uint8_t daikinSetFanIndex = 1;  // Set initial Fan mode
 const uint8_t daikinSetFan[6] = {kDaikin64FanQuiet, kDaikin64FanAuto, kDaikin64FanLow, kDaikin64FanMed, kDaikin64FanHigh, kDaikin64FanTurbo};
 const char* daikinSetFanLabel[6] = {"Quiet", "Auto", "Min", "Med", "Max", "Turbo"};
+
 bool daikinSetSwing = false;  // Set initial swing mode
 const char* daikinGetSwingString(bool swing) {
   return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
 }
 
-void DaikinValidateFanMode() {
+void daikinValidateFanSetting() {
   static uint8_t lastModeIndex = 255;
   if (daikinSetModeIndex == 2 && lastModeIndex != 2 && (daikinSetFanIndex < 2 || daikinSetFanIndex > 4)) daikinSetFanIndex = 2;
   lastModeIndex = daikinSetModeIndex;
 }
 
 void daikinAcUI() {
-  DaikinValidateFanMode();
-
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", daikinSetTemp);  // Convert temperature to string
 
@@ -267,7 +267,10 @@ void daikinAcSetTempUI() {
 }
 
 // Select Daikin AC mode
-void daikinAcSetMode() { inputEncoder(daikinSetModeIndex, 0, 2); }
+void daikinAcSetMode() {
+  inputEncoder(daikinSetModeIndex, 0, 2);
+  daikinValidateFanSetting();  // To check if fan set to the correct setting based on current AC mode
+}
 void daikinAcSetModeUI() {
   daikinAcSetMode();
   daikinAcUI();
