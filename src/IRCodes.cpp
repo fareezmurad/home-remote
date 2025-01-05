@@ -153,7 +153,6 @@ void sharpAcPowerToggle() {
 void sharpAcChkInactivity() {
   if (!irSignalSent && millis() - lastInputTime >= inactivityDuration) {
     sharpAcSetting();
-    sharpAc.setPower(false);
     sharpAc.send();
     irSignalSent = true;
   }
