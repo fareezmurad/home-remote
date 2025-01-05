@@ -22,8 +22,7 @@ void initIrSend();
 void dekaSpeedControl(int index);
 
 // Command to control Sharp air-conditioner
-void sharpAcSetOn();
-void sharpAcSetOff();
+void sharpAcPowerToggle();
 void sharpAcSetTempUI();
 void sharpAcSetFanUI();
 void sharpAcSetModeUI();
@@ -31,8 +30,7 @@ void sharpAcSetSwingUI();
 void sharpAcChkInactivity();
 
 // Command to control Daikin air-conditioner
-void daikinAcUI();
-void daikinAcToggleOn();
+void daikinAcPowerToggle();
 void daikinAcSetTempUI();
 void daikinAcSetModeUI();
 void daikinAcSetFanUI();

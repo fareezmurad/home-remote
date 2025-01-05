@@ -23,7 +23,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.751";
+const char *version = "v1.752";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -43,18 +43,17 @@ MenuItem dekaFanMenu[] = {
 };
 
 MenuItem sharpAcMenu[] = {
-  {"On", nullptr, sharpAcSetOn, false},
+  {"Power Toggle", nullptr, sharpAcPowerToggle, false},
   {"AC Mode", nullptr, sharpAcSetModeUI, true},
   {"Temperature", nullptr, sharpAcSetTempUI, true},
   {"Fan Mode", nullptr, sharpAcSetFanUI, true},
   {"Swing", nullptr, sharpAcSetSwingUI, true},
-  {"Off", nullptr, sharpAcSetOff, false},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
 MenuItem daikinAcMenu[] = {
-  {"Power Toggle", nullptr, daikinAcToggleOn, false},
+  {"Power Toggle", nullptr, daikinAcPowerToggle, false},
   {"AC Mode", nullptr, daikinAcSetModeUI, true},
   {"Temperature", nullptr, daikinAcSetTempUI, true},
   {"Fan Mode", nullptr, daikinAcSetFanUI, true},

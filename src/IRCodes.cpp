@@ -76,6 +76,8 @@ void dekaSpeedControl(int index) {
 }
 
 /*-------------------------SHARP AIR-CONDITIONER-------------------------*/
+bool currentPowerState = false;  // Variable to track the power state
+
 uint8_t sharpSetTemp = 20;  // Initial temperature
 
 uint8_t sharpSetModeIndex = 0;  // Initial AC mode
@@ -126,28 +128,32 @@ void sharpAcUI() {
   sharpAcChkInactivity();  // Send IR signal if there is no input
 }
 
-// Functions to control Sharp AC power state
-void sharpAcSetOn() {
+// Function to hold sharp AC set value
+void sharpAcSetting() {
   sharpAc.setTemp(sharpSetTemp);  // Set the current temperature
   sharpAc.setFan(sharpSetFan[sharpSetFanIndex]);  // Set fan to selected mode
   sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);  // Set AC mode to selected mode
   sharpAc.setSwingToggle(sharpSetSwing);  // Set swing mode
-  sharpAc.on();  // Turn the AC on
-  sharpAc.send();  // Transmit the IR command
 }
 
-void sharpAcSetOff() {
-  sharpAc.off();  // Turn the AC off
-  sharpAc.send();  // Transmit the IR command
+// Function to toggle power of Sharp AC
+void sharpAcPowerToggle() {
+  if (currentPowerState) {
+    sharpAc.off();
+    currentPowerState = false;
+  } else {
+    sharpAcSetting();
+    sharpAc.on();
+    currentPowerState = true;
+  }
+  sharpAc.send();
 }
 
 // Function to send IR signal Automatically
 void sharpAcChkInactivity() {
   if (!irSignalSent && millis() - lastInputTime >= inactivityDuration) {
-    sharpAc.setTemp(sharpSetTemp);
-    sharpAc.setFan(sharpSetFan[sharpSetFanIndex]);
-    sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);
-    sharpAc.setSwingToggle(sharpSetSwing);
+    sharpAcSetting();
+    sharpAc.setPower(false);
     sharpAc.send();
     irSignalSent = true;
   }
@@ -248,7 +254,7 @@ void daikinAcSetting() {
 }
 
 // Function to toggle power Daikin AC
-void daikinAcToggleOn() {
+void daikinAcPowerToggle() {
   daikinAcSetting();
   daikinAc.setPowerToggle(true);
   daikinAc.send();
