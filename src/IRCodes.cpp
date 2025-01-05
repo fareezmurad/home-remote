@@ -99,7 +99,10 @@ void sharpValidateFanSetting() {
 
 void sharpAcUI() {
   char tempStr[4];  // Buffer to hold temperature as a string
-  sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string
+  if (sharpSetModeIndex == 0 || sharpSetModeIndex == 1)
+    strcpy(tempStr, "--");  // For mode that can't control temp setting
+  else
+    sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string if temp control available
 
   u8g2.clearBuffer();
   u8g2.setFontMode(1);
@@ -151,7 +154,9 @@ void sharpAcChkInactivity() {
 }
 
 // Increase or decrease temperature within valid range (16-30°C)
-void sharpAcSetTemp() { inputEncoder(sharpSetTemp, 16, 30); }
+void sharpAcSetTemp() {
+  if (sharpSetModeIndex == 2) inputEncoder(sharpSetTemp, 16, 30);
+}
 void sharpAcSetTempUI() {
   sharpAcSetTemp();  // Update temperature setting
   sharpAcUI();
