@@ -82,8 +82,8 @@ uint8_t sharpSetModeIndex = 0;  // Initial AC mode
 const uint8_t sharpSetMode[3] = {kSharpAcFan, kSharpAcDry, kSharpAcCool};
 const char* sharpSetModeLabel[3] = {"Auto", "Dry", "Cool"};
 uint8_t sharpSetFanIndex = 0;  // Initial fan speed index
-const uint8_t sharpSetFan[5] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanHigh, kSharpAcFanMax};
-const char* sharpSetFanLabel[] = {"Auto", "Min", "Med", "High", "Max"};
+const uint8_t sharpSetFan[4] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanMax};
+const char* sharpSetFanLabel[] = {"Auto", "Min", "Med", "Max"};
 
 bool sharpSetSwing = true;  // Swing state (On/Off)
 const char* sharpGetSwingString(bool swing) {
@@ -159,10 +159,10 @@ void sharpAcSetTempUI() {
 
 // Change fan speed based on current AC mode
 void sharpAcSetFan() {
-  if (sharpSetModeIndex == 1) {
+  if (sharpSetModeIndex == 0 || sharpSetModeIndex == 1) {
     inputEncoder(sharpSetFanIndex, 0, 0);
   } else {
-    inputEncoder(sharpSetFanIndex, 0, 4);
+    inputEncoder(sharpSetFanIndex, 0, 3);
   }
 }
 void sharpAcSetFanUI() {
