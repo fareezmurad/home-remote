@@ -101,16 +101,13 @@ void sharpValidateFanSetting() {
 
 void sharpAcUI() {
   char tempStr[4];  // Buffer to hold temperature as a string
-  if (sharpSetModeIndex == 0 || sharpSetModeIndex == 1)
-    strcpy(tempStr, "--");  // For mode that can't control temp setting
-  else
-    sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string if temp control available
+  sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string
 
   u8g2.clearBuffer();
   u8g2.setFontMode(1);
   u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_profont29_tr);
-  u8g2.drawStr(2, 41, tempStr);
+  u8g2.drawStr(2, 41, sharpSetModeIndex == 0 || sharpSetModeIndex == 1 ? "--" : tempStr);
   u8g2.drawXBMP(36, 22, 16, 16, celcius_bits);
   u8g2.setFont(u8g2_font_profont11_tr);
   u8g2.drawStr(63, 14, "Mode:");
@@ -169,11 +166,7 @@ void sharpAcSetTempUI() {
 
 // Change fan speed based on current AC mode
 void sharpAcSetFan() {
-  if (sharpSetModeIndex == 0 || sharpSetModeIndex == 1) {
-    inputEncoder(sharpSetFanIndex, 0, 0);
-  } else {
-    inputEncoder(sharpSetFanIndex, 0, 3);
-  }
+  if (sharpSetModeIndex == 2) inputEncoder(sharpSetFanIndex, 0, 3);
 }
 void sharpAcSetFanUI() {
   sharpAcSetFan();  // Update fan setting
@@ -207,7 +200,7 @@ uint8_t daikinSetFanIndex = 1;  // Set initial Fan mode
 const uint8_t daikinSetFan[6] = {kDaikin64FanQuiet, kDaikin64FanAuto, kDaikin64FanLow, kDaikin64FanMed, kDaikin64FanHigh, kDaikin64FanTurbo};
 const char* daikinSetFanLabel[6] = {"Quiet", "Auto", "Min", "Med", "Max", "Turbo"};
 
-bool daikinSetSwing = false;  // Set initial swing mode
+bool daikinSetSwing = true;  // Set initial swing mode
 const char* daikinGetSwingString(bool swing) {
   return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
 }
@@ -226,14 +219,14 @@ void daikinAcUI() {
   u8g2.setFontMode(1);
   u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_profont29_tr);
-  u8g2.drawStr(2, 41, tempStr);
+  u8g2.drawStr(2, 41, daikinSetModeIndex == 2 ? "--" : tempStr);
   u8g2.drawXBMP(36, 22, 16, 16, celcius_bits);
   u8g2.setFont(u8g2_font_profont11_tr);
   u8g2.drawStr(63, 14, "Mode:");
   u8g2.drawStr(97, 14, daikinSetModeLabel[daikinSetModeIndex]);
   u8g2.drawRFrame(56, 0, 72, 22, 4);
   u8g2.drawStr(63, 35, "Fan:");
-  u8g2.drawStr(95, 35, daikinSetFanLabel[daikinSetFanIndex]);
+  u8g2.drawStr(95, 35, daikinSetModeIndex == 0 ? "" : daikinSetFanLabel[daikinSetFanIndex]);
   u8g2.drawRFrame(56, 21, 72, 22, 4);
   u8g2.drawStr(63, 57, "Swing:");
   u8g2.drawStr(103, 57, daikinGetSwingString(daikinSetSwing));
@@ -270,7 +263,9 @@ void daikinAcChkInactivity() {
 }
 
 // Select Daikin AC temperature (16c-30c)
-void daikinAcSetTemp() { inputEncoder(daikinSetTemp, 16, 30); }
+void daikinAcSetTemp() {
+  if (daikinSetModeIndex != 2) inputEncoder(daikinSetTemp, 16, 30);
+}
 void daikinAcSetTempUI() {
   daikinAcSetTemp();
   daikinAcUI();
@@ -288,11 +283,8 @@ void daikinAcSetModeUI() {
 
 // Select Daikin AC fan mode
 void daikinAcSetFan() {
-  // Update fan index with encoder input, and limit available range in Fan mode (2-4)
-  if (daikinSetModeIndex == 2)
-    inputEncoder(daikinSetFanIndex, 2, 4);  // Constrain the fan index to Min (2) to Max (4) in Fan mode
-  else
-    inputEncoder(daikinSetFanIndex, 0, 5);  // In other modes, the full range of fan speeds (0-5) is allowed
+  if (daikinSetModeIndex == 2) inputEncoder(daikinSetFanIndex, 2, 4);  // Constrain the fan index to Min (2) to Max (4) in Fan mode
+  if (daikinSetModeIndex == 1) inputEncoder(daikinSetFanIndex, 0, 5);  // In cool modes, the full range of fan speeds (0-5) is allowed
 }
 void daikinAcSetFanUI() {
   daikinAcSetFan();
