@@ -93,6 +93,7 @@ const char* sharpGetSwingString(bool swing) {
 }
 
 // Fan always set to auto whenever mode changed
+// 0 = Auto
 void sharpValidateFanSetting() {
   static uint8_t lastModeIndex = 0;
   if (sharpSetModeIndex != lastModeIndex) sharpSetFanIndex = 0;
@@ -107,6 +108,7 @@ void sharpAcUI() {
   u8g2.setFontMode(1);
   u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_profont29_tr);
+  // sharpSetModeIndex: 0 = Auto, 1 = Dry
   u8g2.drawStr(2, 41, sharpSetModeIndex == 0 || sharpSetModeIndex == 1 ? "--" : tempStr);
   u8g2.drawXBMP(36, 22, 16, 16, celcius_bits);
   u8g2.setFont(u8g2_font_profont11_tr);
@@ -157,7 +159,7 @@ void sharpAcChkInactivity() {
 
 // Increase or decrease temperature within valid range (16-30°C)
 void sharpAcSetTemp() {
-  if (sharpSetModeIndex == 2) inputEncoder(sharpSetTemp, 16, 30);
+  if (sharpSetModeIndex == 2) inputEncoder(sharpSetTemp, 16, 30); //  2 = cool
 }
 void sharpAcSetTempUI() {
   sharpAcSetTemp();  // Update temperature setting
@@ -166,7 +168,7 @@ void sharpAcSetTempUI() {
 
 // Change fan speed based on current AC mode
 void sharpAcSetFan() {
-  if (sharpSetModeIndex == 2) inputEncoder(sharpSetFanIndex, 0, 3);
+  if (sharpSetModeIndex == 2) inputEncoder(sharpSetFanIndex, 0, 3);  // 2 = cool
 }
 void sharpAcSetFanUI() {
   sharpAcSetFan();  // Update fan setting
@@ -219,6 +221,7 @@ void daikinAcUI() {
   u8g2.setFontMode(1);
   u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_profont29_tr);
+  // daikinSetModeIndex: 2 = Fan
   u8g2.drawStr(2, 41, daikinSetModeIndex == 2 ? "--" : tempStr);
   u8g2.drawXBMP(36, 22, 16, 16, celcius_bits);
   u8g2.setFont(u8g2_font_profont11_tr);
@@ -226,6 +229,7 @@ void daikinAcUI() {
   u8g2.drawStr(97, 14, daikinSetModeLabel[daikinSetModeIndex]);
   u8g2.drawRFrame(56, 0, 72, 22, 4);
   u8g2.drawStr(63, 35, "Fan:");
+  // daikinSetModeIndex: 0 = Dry
   u8g2.drawStr(95, 35, daikinSetModeIndex == 0 ? "" : daikinSetFanLabel[daikinSetFanIndex]);
   u8g2.drawRFrame(56, 21, 72, 22, 4);
   u8g2.drawStr(63, 57, "Swing:");
@@ -264,7 +268,7 @@ void daikinAcChkInactivity() {
 
 // Select Daikin AC temperature (16c-30c)
 void daikinAcSetTemp() {
-  if (daikinSetModeIndex != 2) inputEncoder(daikinSetTemp, 16, 30);
+  if (daikinSetModeIndex != 2) inputEncoder(daikinSetTemp, 16, 30);  // 2 = Fan
 }
 void daikinAcSetTempUI() {
   daikinAcSetTemp();
