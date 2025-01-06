@@ -20,9 +20,9 @@ void initIrSend() {
   daikinAc.begin();
 }
 
-/* --------------- General variable and function for AC sends usage --------------- */
-bool irSignalSent = false;  // Tracks if IR signal has been sent
-unsigned long lastInputTime = 0;  // Records time of last encoder input
+/* ------------------- General variables and functions for AC control ------------------ */
+bool irSignalSent = false;  // Tracks wether IR signal has been sent
+unsigned long lastInputTime = 0;  // Records timestamp of last encoder input
 const unsigned long inactivityDuration = 2000;  // Duration (ms) before sending IR automatically
 
 // Resets the inactivity timer and IR sent flag on new input
@@ -31,7 +31,7 @@ void resetTimer() {
   irSignalSent = false;
 }
 
-// Adjusts encoder-controlled value within specified limits
+// Adjusts encoder-controlled value within specified range
 void inputEncoder(uint8_t& value, int min, int max) {
   if (encoderCurrentRead > encoderLastRead && value < max) {
     value++;  // Increment value if within max limit
@@ -43,26 +43,22 @@ void inputEncoder(uint8_t& value, int min, int max) {
   }
 }
 
-// Adjust encoder-controlled value for toggling only
+// Toggles a boolean state using the encoder input
 void toggleEncoder(bool& state) {
-  if (encoderCurrentRead > encoderLastRead) {
-    state = !state;  // Toggle state
-    resetTimer();
-  }
-  if (encoderLastRead > encoderCurrentRead) {
-    state = !state;  // Toggle state
+  if (encoderCurrentRead > encoderLastRead || encoderLastRead > encoderCurrentRead) {
+    state = !state;  // Toggle the state
     resetTimer();
   }
 }
 
-// Bitmap for temperature indicator
+// Bitmap for Celsius temperature indicator (used in UI)
 static const unsigned char celcius_bits[] U8X8_PROGMEM = {
   0x38, 0x00, 0x44, 0x40, 0xd4, 0xa0, 0x54, 0x40, 0xd4, 0x1c, 0x54,
   0x06, 0xd4, 0x02, 0x54, 0x02, 0x54, 0x06, 0x92, 0x1c, 0x39, 0x01,
   0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
 
 /*---------------------------DEKA FAN---------------------------*/
-// Array of SymphonyCode for controlling Deka fan speeds
+// Array of SymphonyCode structures for controlling Deka fan speeds
 SymphonyCode fanDeka[] = {
   {0xD80, 12, 3},  // Fan off
   {0xD88, 12, 3},  // Speed 1
@@ -70,36 +66,36 @@ SymphonyCode fanDeka[] = {
   {0xD82, 12, 3}  // Speed 3
 };
 
-// Function to send IR command for Deka fan speed based on selected index
+// Sends the IR command for Deka fan speed based on the selected index
 void dekaSpeedControl(int index) {
   irSend.sendSymphony(fanDeka[index].code, fanDeka[index].bits, fanDeka[index].repeats);
 }
 
 /*-------------------------SHARP AIR-CONDITIONER-------------------------*/
-bool currentPowerState = false;  // Variable to track the power state
+bool currentPowerState = false;  // Tracks the power state of the Sharp AC
 
-uint8_t sharpSetTemp = 20;  // Initial temperature
+uint8_t sharpSetTemp = 20;  // Default temperature setting
 
-uint8_t sharpSetModeIndex = 0;  // Initial AC mode
+uint8_t sharpSetModeIndex = 0;  // Initial AC mode index
 const uint8_t sharpSetMode[3] = {kSharpAcFan, kSharpAcDry, kSharpAcCool};
 const char* sharpSetModeLabel[3] = {"Auto", "Dry", "Cool"};
 uint8_t sharpSetFanIndex = 0;  // Initial fan speed index
 const uint8_t sharpSetFan[4] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanMax};
 const char* sharpSetFanLabel[] = {"Auto", "Min", "Med", "Max"};
 
-bool sharpSetSwing = true;  // Swing state (On/Off)
+bool sharpSetSwing = true;  // Initial swing state
 const char* sharpGetSwingString(bool swing) {
-  return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
+  return swing ? "On" : "Off";  // Returns "On" or "Off" as a string based on the swing state
 }
 
-// Fan always set to auto whenever mode changed
-// 0 = Auto
+// Ensures fan speed is reset to "Auto" when the AC mode changes
 void sharpValidateFanSetting() {
   static uint8_t lastModeIndex = 0;
   if (sharpSetModeIndex != lastModeIndex) sharpSetFanIndex = 0;
   lastModeIndex = sharpSetModeIndex;
 }
 
+// Renders the settings on the OLED display
 void sharpAcUI() {
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string
@@ -124,18 +120,18 @@ void sharpAcUI() {
   u8g2.setDrawColor(1);
   u8g2.sendBuffer();
 
-  sharpAcChkInactivity();  // Send IR signal if there is no input
+  sharpAcChkInactivity();  // Automatically sends IR signal after inactivity
 }
 
-// Function to hold sharp AC set value
+// Updates AC settings
 void sharpAcSetting() {
-  sharpAc.setTemp(sharpSetTemp);  // Set the current temperature
-  sharpAc.setFan(sharpSetFan[sharpSetFanIndex]);  // Set fan to selected mode
-  sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);  // Set AC mode to selected mode
-  sharpAc.setSwingToggle(sharpSetSwing);  // Set swing mode
+  sharpAc.setTemp(sharpSetTemp);
+  sharpAc.setFan(sharpSetFan[sharpSetFanIndex]);
+  sharpAc.setMode(sharpSetMode[sharpSetModeIndex]);
+  sharpAc.setSwingToggle(sharpSetSwing);
 }
 
-// Function to toggle power of Sharp AC
+// Toggles power of the AC
 void sharpAcPowerToggle() {
   if (currentPowerState) {
     sharpAc.off();
@@ -148,7 +144,7 @@ void sharpAcPowerToggle() {
   sharpAc.send();
 }
 
-// Function to send IR signal Automatically
+// Automatically sends IR signal if there's no input for a set duration
 void sharpAcChkInactivity() {
   if (!irSignalSent && millis() - lastInputTime >= inactivityDuration) {
     sharpAcSetting();
@@ -157,56 +153,57 @@ void sharpAcChkInactivity() {
   }
 }
 
-// Increase or decrease temperature within valid range (16-30°C)
+// Set temperature within valid range (16-30°C). Only for cool mode
 void sharpAcSetTemp() {
   if (sharpSetModeIndex == 2) inputEncoder(sharpSetTemp, 16, 30);  //  2 = cool
 }
 void sharpAcSetTempUI() {
-  sharpAcSetTemp();  // Update temperature setting
+  sharpAcSetTemp();
   sharpAcUI();
 }
 
-// Change fan speed based on current AC mode
+// Set fan speed based on current AC mode. Only for cool mode
 void sharpAcSetFan() {
   if (sharpSetModeIndex == 2) inputEncoder(sharpSetFanIndex, 0, 3);  // 2 = cool
 }
 void sharpAcSetFanUI() {
-  sharpAcSetFan();  // Update fan setting
+  sharpAcSetFan();
   sharpAcUI();
 }
 
-// Change mode within valid range (index 0-2)
+// Set mode within valid range (index 0-2)
 void sharpAcSetMode() {
   inputEncoder(sharpSetModeIndex, 0, 2);
   sharpValidateFanSetting();
 }
 void sharpAcSetModeUI() {
-  sharpAcSetMode();  // Update mode setting
+  sharpAcSetMode();
   sharpAcUI();
 }
 
-// Toggle swing state (on/off) based on encoder input
+// Toggle swing state (on/off)
 void sharpAcSetSwing() { toggleEncoder(sharpSetSwing); }
 void sharpAcSetSwingUI() {
-  sharpAcSetSwing();  // Update swing setting
+  sharpAcSetSwing();
   sharpAcUI();
 }
 
 /*-------------------------DAIKIN AIR-CONDITIONER-------------------------*/
-uint8_t daikinSetTemp = 20;  // Set initial temperature
+uint8_t daikinSetTemp = 20;  // Default temperature setting
 
-uint8_t daikinSetModeIndex = 2;  // Set initial AC mode
+uint8_t daikinSetModeIndex = 2;  // Initial AC mode index
 const uint8_t daikinSetMode[3] = {kDaikin64Fan, kDaikin64Dry, kDaikin64Cool};
 const char* daikinSetModeLabel[3] = {"Fan", "Dry", "Cool"};
-uint8_t daikinSetFanIndex = 1;  // Set initial Fan mode
+uint8_t daikinSetFanIndex = 1;  // Initial fan speed index
 const uint8_t daikinSetFan[6] = {kDaikin64FanQuiet, kDaikin64FanAuto, kDaikin64FanLow, kDaikin64FanMed, kDaikin64FanHigh, kDaikin64FanTurbo};
 const char* daikinSetFanLabel[6] = {"Quiet", "Auto", "Min", "Med", "Max", "Turbo"};
 
-bool daikinSetSwing = true;  // Set initial swing mode
+bool daikinSetSwing = true;  // Initial swing state
 const char* daikinGetSwingString(bool swing) {
-  return swing ? "On" : "Off";  // Return "On" if true, "Off" if false
+  return swing ? "On" : "Off";  // Returns "On" or "Off" as a string based on the swing state
 }
 
+// Ensures fan speed is set to correct setting when in fan mode
 void daikinValidateFanSetting() {
   static uint8_t lastModeIndex = 255;
   if (daikinSetModeIndex == 0 && lastModeIndex != 0 && (daikinSetFanIndex < 2 || daikinSetFanIndex > 4)) daikinSetFanIndex = 2;
@@ -236,25 +233,25 @@ void daikinAcUI() {
   u8g2.setDrawColor(1);
   u8g2.sendBuffer();
 
-  daikinAcChkInactivity();  // Send IR signal if there is no input for 2 sec
+  daikinAcChkInactivity();  // Automatically sends IR signal after inactivity
 }
 
-// Function to hold Daikin AC set value
+// Update AC setting
 void daikinAcSetting() {
   daikinAc.setTemp(daikinSetTemp);
-  daikinAc.setMode(daikinSetMode[daikinSetModeIndex]);
   daikinAc.setFan(daikinSetFan[daikinSetFanIndex]);
+  daikinAc.setMode(daikinSetMode[daikinSetModeIndex]);
   daikinAc.setSwingVertical(daikinSetSwing);
 }
 
-// Function to toggle power Daikin AC
+// Toggles power of the AC
 void daikinAcPowerToggle() {
   daikinAcSetting();
   daikinAc.setPowerToggle(true);
   daikinAc.send();
 }
 
-// Function to send IR signal automatically
+// Automatically sends IR signal if there's no input for a set duration
 void daikinAcChkInactivity() {
   if (!irSignalSent && millis() - lastInputTime >= inactivityDuration) {
     daikinAcSetting();
@@ -264,24 +261,14 @@ void daikinAcChkInactivity() {
   }
 }
 
-// Select Daikin AC temperature (16c-30c)
+// Set temperature within valid range (16-30°C)
 void daikinAcSetTemp() { inputEncoder(daikinSetTemp, 16, 30); }
 void daikinAcSetTempUI() {
   daikinAcSetTemp();
   daikinAcUI();
 }
 
-// Select Daikin AC mode
-void daikinAcSetMode() {
-  inputEncoder(daikinSetModeIndex, 0, 2);
-  daikinValidateFanSetting();  // To check if fan set to the correct setting based on current AC mode
-}
-void daikinAcSetModeUI() {
-  daikinAcSetMode();
-  daikinAcUI();
-}
-
-// Select Daikin AC fan mode
+// Set fan speed based on current AC mode
 void daikinAcSetFan() {
   if (daikinSetModeIndex == 0)
     inputEncoder(daikinSetFanIndex, 2, 4);  // Constrain the fan index to Min (2) to Max (4) in Fan mode
@@ -293,7 +280,17 @@ void daikinAcSetFanUI() {
   daikinAcUI();
 }
 
-// Toggle Daikin AC swing mode
+// Set mode within valid range (index 0-2)
+void daikinAcSetMode() {
+  inputEncoder(daikinSetModeIndex, 0, 2);
+  daikinValidateFanSetting();
+}
+void daikinAcSetModeUI() {
+  daikinAcSetMode();
+  daikinAcUI();
+}
+
+// Toggle swing state (on/off)
 void daikinAcSetSwing() { toggleEncoder(daikinSetSwing); }
 void daikinAcSetSwingUI() {
   daikinAcSetSwing();
