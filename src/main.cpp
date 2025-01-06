@@ -23,7 +23,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.754";
+const char *version = "v1.755";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
