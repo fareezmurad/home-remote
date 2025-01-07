@@ -21,7 +21,7 @@ void initIrSend() {
 }
 
 /* ------------------- General variables and functions for AC control ------------------ */
-bool irSignalSent = false;  // Tracks wether IR signal has been sent
+bool irSignalSent = true;  // Tracks wether IR signal has been sent
 unsigned long lastInputTime = 0;  // Records timestamp of last encoder input
 const unsigned long inactivityDuration = 2000;  // Duration (ms) before sending IR automatically
 
