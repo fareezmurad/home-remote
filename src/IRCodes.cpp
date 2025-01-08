@@ -210,6 +210,7 @@ void daikinValidateFanSetting() {
   lastModeIndex = daikinSetModeIndex;
 }
 
+// Renders the settings on the OLED display
 void daikinAcUI() {
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", daikinSetTemp);  // Convert temperature to string
