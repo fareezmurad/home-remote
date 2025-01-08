@@ -81,7 +81,7 @@ const uint8_t sharpSetMode[3] = {kSharpAcFan, kSharpAcDry, kSharpAcCool};
 const char* sharpSetModeLabel[3] = {"Auto", "Dry", "Cool"};
 uint8_t sharpSetFanIndex = 0;  // Initial fan speed index
 const uint8_t sharpSetFan[4] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanMax};
-const char* sharpSetFanLabel[] = {"Auto", "Min", "Med", "Max"};
+const char* sharpSetFanLabel[4] = {"Auto", "Min", "Med", "Max"};
 
 bool sharpSetSwing = true;  // Initial swing state
 const char* sharpGetSwingString(bool swing) {
