@@ -58,12 +58,15 @@ static const unsigned char celcius_bits[] U8X8_PROGMEM = {
   0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
 
 /*---------------------------DEKA FAN---------------------------*/
+const uint8_t nbitsFanDeka = 12;
+const uint8_t repeatFanDeka = 3;
+
 // Array of SymphonyCode structures for controlling Deka fan speeds
 SymphonyCode fanDeka[] = {
-  {0xD80, 12, 3},  // Fan off
-  {0xD88, 12, 3},  // Speed 1
-  {0xDC6, 12, 3},  // Speed 2
-  {0xD82, 12, 3}  // Speed 3
+  {0xD80, nbitsFanDeka, repeatFanDeka},  // Fan off
+  {0xD88, nbitsFanDeka, repeatFanDeka},  // Speed 1
+  {0xDC6, nbitsFanDeka, repeatFanDeka},  // Speed 2
+  {0xD82, nbitsFanDeka, repeatFanDeka}  // Speed 3
 };
 
 // Sends the IR command for Deka fan speed based on the selected index
