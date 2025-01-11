@@ -11,11 +11,30 @@ extern int encoderLastRead;
 // Structure for storing IR command details
 struct SymphonyCode {
   uint16_t code;  // IR command code
+<<<<<<< HEAD
   uint8_t bits = 0;  // Bit length of the code
   uint8_t repeats = 0;  // Number of repetitions
 
   SymphonyCode(uint16_t c, uint8_t b = 0, uint8_t r = 0)
     : code(c), bits(b), repeats(r) {}
+=======
+  uint8_t nbits = 0;  // Bit length of the code
+  uint8_t repeat = 0;  // Number of repetitions
+
+  SymphonyCode(uint16_t c, uint8_t b = 0, uint8_t r = 0)
+    : code(c), nbits(b), repeat(r) {}
+};
+
+// void IRsend::sendRC6(const uint64_t data, const uint16_t nbits, const uint16_t repeat)
+struct RC6Code {
+  uint64_t code;
+  uint16_t nbits;
+  uint16_t repeat;
+  bool toggle;
+
+  RC6Code(uint64_t c, uint16_t b = 0, uint16_t r = 0, bool t = false)
+    : code(c), nbits(b), repeat(r), toggle(t) {}
+>>>>>>> f536b99 (Refactor RC6 structure code section.)
 };
 
 // void IRsend::sendRC6(const uint64_t data, const uint16_t nbits, const uint16_t repeat)
