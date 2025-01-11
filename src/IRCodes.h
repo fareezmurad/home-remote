@@ -11,8 +11,11 @@ extern int encoderLastRead;
 // Structure for storing IR command details
 struct SymphonyCode {
   uint16_t code;  // IR command code
-  uint8_t bits;  // Bit length of the code
-  uint8_t repeats;  // Number of repetitions
+  uint8_t bits = 0;  // Bit length of the code
+  uint8_t repeats = 0;  // Number of repetitions
+
+  SymphonyCode(uint16_t c, uint8_t b = 0, uint8_t r = 0)
+    : code(c), bits(b), repeats(r) {}
 };
 
 // Initializes the IR sender
