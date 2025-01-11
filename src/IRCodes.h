@@ -22,17 +22,18 @@ struct SymphonyCode {
   uint8_t repeat = 0;  // Number of repetitions
 
   SymphonyCode(uint16_t c, uint8_t b = 0, uint8_t r = 0)
-    : code(c), nbits(b), repeat(r) {}
+      : code(c), nbits(b), repeat(r) {}
 };
 
 // void IRsend::sendRC6(const uint64_t data, const uint16_t nbits, const uint16_t repeat)
 struct RC6Code {
   uint64_t code;
-  uint16_t nbits;
-  uint16_t repeat;
-  bool toggle;
+  uint16_t nbits = 0;
+  uint16_t repeat = 0;
+  bool toggle = false;  // Toggle bit state
 
   RC6Code(uint64_t c, uint16_t b = 0, uint16_t r = 0, bool t = false)
+<<<<<<< HEAD
     : code(c), nbits(b), repeat(r), toggle(t) {}
 >>>>>>> f536b99 (Refactor RC6 structure code section.)
 };
@@ -42,6 +43,9 @@ struct RC6Code {
   uint64_t code;
   uint16_t bits;
   uint16_t repeat;
+=======
+      : code(c), nbits(b), repeat(r), toggle(t) {}
+>>>>>>> 5ef9423 (Fix issue.)
 };
 
 // Initializes the IR sender
