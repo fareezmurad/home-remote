@@ -18,6 +18,13 @@ struct SymphonyCode {
     : code(c), bits(b), repeats(r) {}
 };
 
+// void IRsend::sendRC6(const uint64_t data, const uint16_t nbits, const uint16_t repeat)
+struct RC6Code {
+  uint64_t code;
+  uint16_t bits;
+  uint16_t repeat;
+};
+
 // Initializes the IR sender
 void initIrSend();
 
