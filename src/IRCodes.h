@@ -52,7 +52,10 @@ struct RC6Code {
 void initIrSend();
 
 // Sends IR command to control Deka fan speed
-void dekaSpeedControl(int index);
+void dekaSpeedControl(uint8_t index);
+
+// Control astro (Satellite TV) decoder
+void astroRemote(uint8_t index);
 
 // Command to control Sharp air-conditioner
 void sharpAcPowerToggle();

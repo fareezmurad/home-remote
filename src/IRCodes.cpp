@@ -57,6 +57,7 @@ static const unsigned char celcius_bits[] U8X8_PROGMEM = {
   0x06, 0xd4, 0x02, 0x54, 0x02, 0x54, 0x06, 0x92, 0x1c, 0x39, 0x01,
   0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
 
+/*===========================SYMPHONY PROTOCOL=========================*/
 /*---------------------------DEKA FAN---------------------------*/
 // Array of SymphonyCode structures for controlling Deka fan speeds
 SymphonyCode fanDeka[] = {
@@ -67,11 +68,41 @@ SymphonyCode fanDeka[] = {
 };
 
 // Sends the IR command for Deka fan speed based on the selected index
-void dekaSpeedControl(int index) {
+void dekaSpeedControl(uint8_t index) {
   const uint8_t nbits = 12;
   const uint8_t repeat = 3;
   irSend.sendSymphony(fanDeka[index].code, nbits, repeat);
 }
+
+/*================================RC6 PROTOCOL==============================*/
+// Specifically to flip toggle bit of RC6 36 bit. It is the 16th LSB.
+uint64_t applyToggleBit36(RC6Code& command) {
+  if (command.toggle) {
+    return command.code | (1ULL << 15);  // Set the toggle bit (16th LSB)
+  } else {
+    return command.code & ~(1ULL << 15);  // Clear the toggle bit
+  }
+}
+
+void sendRC6Command(RC6Code& command) {
+  //  Get the code with the current toggle bit
+  uint64_t codeToSend = applyToggleBit36(command);
+
+  irSend.sendRC6(command.code, command.nbits, command.repeat);
+
+  //  Flip the togge state for the next press
+  command.toggle = !command.toggle;
+}
+
+/*--------------------------------ASTRO REMOTE---------------------------*/
+// Array of RC6 code for controlling astro (Satellite tv channel provider)
+RC6Code astro[] = {
+  {0xC8056A70C},  // Power toggle
+  {0xC8056A720},  // Channel+
+  {0xC8056A721}  // Channel-
+};
+
+void astroRemote(uint8_t index) { sendRC6Command(astro[index]); }
 
 /*-------------------------SHARP AIR-CONDITIONER-------------------------*/
 bool currentPowerState = false;  // Tracks the power state of the Sharp AC
