@@ -60,18 +60,18 @@ static const unsigned char celcius_bits[] U8X8_PROGMEM = {
 /*===========================SYMPHONY PROTOCOL=========================*/
 /*---------------------------DEKA FAN---------------------------*/
 // Array of SymphonyCode structures for controlling Deka fan speeds
+const uint8_t nbitsFanDeka = 12;
+
 SymphonyCode fanDeka[] = {
-  {0xD80},  // Fan off
-  {0xD88},  // Speed 1
-  {0xDC6},  // Speed 2
-  {0xD82}  // Speed 3
+  {0xD80, nbitsFanDeka},  // Fan off
+  {0xD88, nbitsFanDeka},  // Speed 1
+  {0xDC6, nbitsFanDeka},  // Speed 2
+  {0xD82, nbitsFanDeka}  // Speed 3
 };
 
 // Sends the IR command for Deka fan speed based on the selected index
 void dekaSpeedControl(uint8_t index) {
-  const uint8_t nbits = 12;
-  const uint8_t repeat = 3;
-  irSend.sendSymphony(fanDeka[index].code, nbits, repeat);
+  irSend.sendSymphony(fanDeka[index].code, fanDeka[index].nbits, fanDeka[index].repeat);
 }
 
 /*================================RC6 PROTOCOL==============================*/
@@ -88,7 +88,7 @@ void sendRC6Command(RC6Code& command) {
   //  Get the code with the current toggle bit
   uint64_t codeToSend = applyToggleBit36(command);
 
-  irSend.sendRC6(command.code, command.nbits, command.repeat);
+  irSend.sendRC6(codeToSend, command.nbits, command.repeat);
 
   //  Flip the togge state for the next press
   command.toggle = !command.toggle;
@@ -96,10 +96,12 @@ void sendRC6Command(RC6Code& command) {
 
 /*--------------------------------ASTRO REMOTE---------------------------*/
 // Array of RC6 code for controlling astro (Satellite tv channel provider)
+uint16_t nbitsAstro = 36;
+
 RC6Code astro[] = {
-  {0xC8056A70C},  // Power toggle
-  {0xC8056A720},  // Channel+
-  {0xC8056A721}  // Channel-
+  {0xC8056A70C, nbitsAstro},  // Power toggle
+  {0xC8056A720, nbitsAstro},  // Channel+
+  {0xC8056A721, nbitsAstro}  // Channel-
 };
 
 void astroRemote(uint8_t index) { sendRC6Command(astro[index]); }
