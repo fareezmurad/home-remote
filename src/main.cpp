@@ -44,8 +44,8 @@ MenuItem dekaFanMenu[] = {
 
 MenuItem astroMenu[] = {
   {"Power Toggle", nullptr, []() { astroRemote(0); }, false},
-  {"Channel++", nullptr, []() { astroRemote(1); }, false},
-  {"Channel--", nullptr, []() { astroRemote(2); }, false},
+  {"Channel+", nullptr, []() { astroRemote(1); }, false},
+  {"Channel-", nullptr, []() { astroRemote(2); }, false},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
