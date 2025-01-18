@@ -29,6 +29,12 @@ struct RC6Code {
       : code(c), nbits(b), repeat(r), toggle(t) {}
 };
 
+// LG TV NEC 32 bits IR Command
+const uint64_t tvLGPowerToggle = 0x20DF10EF;
+const uint64_t tvLGVolumeUp = 0x20DF40BF;
+const uint64_t tvLGVolumeDown = 0x20DFC03F;
+const uint64_t tvLGVolumeMute = 0x20DF906F;
+
 // Initializes the IR sender
 void initIrSend();
 
