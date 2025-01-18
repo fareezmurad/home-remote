@@ -63,7 +63,7 @@ void sendNEC(uint64_t command, uint16_t nbits, uint16_t repeat = 0) {
 }
 
 /*------------------------------LGTV----------------------------*/
-void sendLGTV (uint64_t command) {
+void sendLGTV(uint64_t command) {
   sendNEC(command, 32);
 }
 
