@@ -23,7 +23,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.8";
+const char *version = "v1.81";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -38,6 +38,15 @@ MenuItem dekaFanMenu[] = {
   {"Speed 1", nullptr, []() { dekaSpeedControl(1); }, false},
   {"Speed 2", nullptr, []() { dekaSpeedControl(2); }, false},
   {"Speed 3", nullptr, []() { dekaSpeedControl(3); }, false},
+  {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
+  {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
+};
+
+MenuItem LGTVMenu[] = {
+  {"PowerToggle", nullptr, []() { sendLGTV(tvLGPowerToggle); }, false},
+  {"Volume Up", nullptr, []() { sendLGTV(tvLGVolumeUp); }, false},
+  {"Volume Down", nullptr, []() { sendLGTV(tvLGVolumeDown); }, false},
+  {"Mute", nullptr, []() { sendLGTV(tvLGVolumeMute); }, false},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
@@ -72,6 +81,7 @@ MenuItem daikinAcMenu[] = {
 
 MenuItem irSendMenu[] = {
   {"Deka Fan", dekaFanMenu, nullptr, false},
+  {"LG TV", LGTVMenu, nullptr, false},
   {"Astro", astroMenu, nullptr, false},
   {"Sharp A/C", sharpAcMenu, nullptr, false},
   {"Daikin A/C", daikinAcMenu, nullptr, false},

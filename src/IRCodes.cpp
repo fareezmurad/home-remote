@@ -57,6 +57,16 @@ static const unsigned char celcius_bits[] U8X8_PROGMEM = {
   0x06, 0xd4, 0x02, 0x54, 0x02, 0x54, 0x06, 0x92, 0x1c, 0x39, 0x01,
   0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
 
+/*==============================NEC PROTOCOL===========================*/
+void sendNEC(uint64_t command, uint16_t nbits, uint16_t repeat = 0) {
+  irSend.sendNEC(command, nbits, repeat);
+}
+
+/*------------------------------LGTV----------------------------*/
+void sendLGTV (uint64_t command) {
+  sendNEC(command, 32);
+}
+
 /*===========================SYMPHONY PROTOCOL=========================*/
 /*---------------------------DEKA FAN---------------------------*/
 // Array of SymphonyCode structures for controlling Deka fan speeds

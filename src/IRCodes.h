@@ -35,6 +35,8 @@ const uint64_t tvLGVolumeUp = 0x20DF40BF;
 const uint64_t tvLGVolumeDown = 0x20DFC03F;
 const uint64_t tvLGVolumeMute = 0x20DF906F;
 
+void sendLGTV (uint64_t command);
+
 // Initializes the IR sender
 void initIrSend();
 
