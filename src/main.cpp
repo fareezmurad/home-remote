@@ -170,10 +170,13 @@ void drawMenuList() {
 void selectHighlightedMenu() {
   if (selectButton.pressed()) {
     if (currentMenu[currentItemIndex].action != nullptr) {  // Execute action if defined
+
       // Check if the action requires display update
       if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = true;  // function require display to be updated
       else currentMenu[currentItemIndex].action();  // Only execute code without requiring to update the display
-    } else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) {  // Enter sub-menu if defined
+    } 
+    
+    else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) {  // Enter sub-menu if defined
       headerStack[menuDepth] = currentMenu[currentItemIndex].title;  // Push current menu title onto the stack to update the header
       // Push current menu onto the stack before entering submenu
       menuStack[menuDepth++] = currentMenu;
@@ -182,7 +185,9 @@ void selectHighlightedMenu() {
       displayStartItemIndex = 0;
       displaySelectedItemIndex = 0;
       currentItemIndex = 0;
-    } else if (currentItemIndex == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) {  // Go back if select 'back' option in sub-menu
+    } 
+    
+    else if (currentItemIndex == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) {  // Go back if select 'back' option in sub-menu
       // "Back" option: Pop the previous menu from the stack
       currentMenu = menuStack[--menuDepth];
       // Reset index for display and selection
