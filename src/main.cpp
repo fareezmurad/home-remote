@@ -38,10 +38,20 @@ struct MenuItem {
 };
 
 MenuItem dekaFanMenu[] = {
-  {"Off", nullptr, []() { dekaSpeedControl(0); }, false},
-  {"Speed 1", nullptr, []() { dekaSpeedControl(1); }, false},
-  {"Speed 2", nullptr, []() { dekaSpeedControl(2); }, false},
-  {"Speed 3", nullptr, []() { dekaSpeedControl(3); }, false},
+  {"Off", nullptr, []() { sendDekaFan(fanDekaPowerOff); }, false},
+  {"Speed 1", nullptr, []() { sendDekaFan(fanDekaSpeedOne); }, false},
+  {"Speed 2", nullptr, []() { sendDekaFan(fanDekaSpeedTwo); }, false},
+  {"Speed 3", nullptr, []() { sendDekaFan(fanDekaSpeed0Three); }, false},
+  {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
+  {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
+};
+
+MenuItem FFTFanMenu[] = {
+  {"Off", nullptr, []() { sendFFTFan(fanFFTPowerOff); }, false},
+  {"Speed 1", nullptr, []() { sendFFTFan(fanFFTSpeedOne); }, false},
+  {"Speed 2", nullptr, []() { sendFFTFan(fanFFTSpeedTwo); }, false},
+  {"Speed 3", nullptr, []() { sendFFTFan(fanFFTSpeedThree); }, false},
+  {"Speed 4", nullptr, []() { sendFFTFan(fanFFTSpeedFour); }, false},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
@@ -56,9 +66,9 @@ MenuItem LGTVMenu[] = {
 };
 
 MenuItem astroMenu[] = {
-  {"Power Toggle", nullptr, []() { astroRemote(0); }, false},
-  {"Channel+", nullptr, []() { astroRemote(1); }, false},
-  {"Channel-", nullptr, []() { astroRemote(2); }, false},
+  {"Power Toggle", nullptr, []() { sendAstroTv(tvAstroPowerToggle); }, false},
+  {"Channel+", nullptr, []() { sendAstroTv(tvAstroChannelUp); }, false},
+  {"Channel-", nullptr, []() { sendAstroTv(tvAstroChannelDown); }, false},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
@@ -85,6 +95,7 @@ MenuItem daikinAcMenu[] = {
 
 MenuItem irSendMenu[] = {
   {"Deka Fan", dekaFanMenu, nullptr, false},
+  {"Living Room Fan", FFTFanMenu, nullptr, false},
   {"LG TV", LGTVMenu, nullptr, false},
   {"Astro", astroMenu, nullptr, false},
   {"Sharp A/C", sharpAcMenu, nullptr, false},
