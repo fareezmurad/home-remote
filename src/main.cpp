@@ -4,6 +4,7 @@
 #include <ESP32Encoder.h>
 #include <U8g2lib.h>
 
+#include "ir_general.h"
 #include "IRCodes.h"
 #include "Info.h"
 #include "ESPNOW.h"
@@ -23,7 +24,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.81";
+const char *version = "v1.90";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -263,7 +264,8 @@ void underDevelopment() {
 void setup() {
   Serial.begin(115200);  // Initialize serial communication
   u8g2.begin();  // Initialize the OLED display
-  initIrSend();  // Initialize the IR LED
+  initIrGeneral();  // Initialize the IR LED for general electrical appliances
+  initIrAirConditioner();  // Initialize the IR LED for Air-Conditioner
   dataUpdateOnStartup();  // Update Home Automation Data
 
   // Configure the rotary encoder
