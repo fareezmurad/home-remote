@@ -1,19 +1,15 @@
 #include "ir_aircond.h"
 
 #include <IRremoteESP8266.h>
-#include <IRsend.h>
 #include <ir_Daikin.h>
 #include <ir_Sharp.h>
-
-// Pin configuration for IR LED
-const uint8_t IR_LED = 17;
 
 // Instances for sending IR signals
 IRSharpAc sharpAc(IR_LED);
 IRDaikin64 daikinAc(IR_LED);
 
 // Function to initialize the IR sender
-void initIrAirConditioner() {
+void initIrAirCond() {
   sharpAc.begin();
   daikinAc.begin();
 }

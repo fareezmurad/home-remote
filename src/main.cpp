@@ -14,6 +14,9 @@
 #define DT 25
 #define SELECT_BUTTON 32
 
+// Pin configuration for IR LED
+const uint8_t IR_LED = 17;
+
 // Initialize the OLED display object (U8g2 library)
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
@@ -265,7 +268,7 @@ void setup() {
   Serial.begin(115200);  // Initialize serial communication
   u8g2.begin();  // Initialize the OLED display
   initIrGeneral();  // Initialize the IR LED for general electrical appliances
-  initIrAirConditioner();  // Initialize the IR LED for Air-Conditioner
+  initIrAirCond();  // Initialize the IR LED for Air-Conditioner
   dataUpdateOnStartup();  // Update Home Automation Data
 
   // Configure the rotary encoder
