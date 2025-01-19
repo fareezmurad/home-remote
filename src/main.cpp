@@ -5,7 +5,7 @@
 #include <U8g2lib.h>
 
 #include "ir_general.h"
-#include "IRCodes.h"
+#include "ir_aircond.h"
 #include "Info.h"
 #include "ESPNOW.h"
 

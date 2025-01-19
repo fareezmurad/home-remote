@@ -1,4 +1,4 @@
-#include "IRCodes.h"
+#include "ir_aircond.h"
 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>

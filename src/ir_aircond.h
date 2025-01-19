@@ -1,5 +1,5 @@
-#ifndef IRCODES_H
-#define IRCODES_H
+#ifndef IR_AIRCOND_H
+#define IR_AIRCOND_H
 
 #include <U8g2lib.h>
 #include <stdint.h>
@@ -27,4 +27,4 @@ void daikinAcSetFanUI();
 void daikinAcSetSwingUI();
 void daikinAcChkInactivity();
 
-#endif  // IRCODES
+#endif
