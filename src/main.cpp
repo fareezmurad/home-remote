@@ -4,10 +4,10 @@
 #include <ESP32Encoder.h>
 #include <U8g2lib.h>
 
-#include "ir_general.h"
-#include "ir_aircond.h"
-#include "Info.h"
 #include "ESPNOW.h"
+#include "Info.h"
+#include "ir_aircond.h"
+#include "ir_general.h"
 
 // Define pin numbers
 #define CLK 27
@@ -189,8 +189,8 @@ void selectHighlightedMenu() {
       // Check if the action requires display update
       if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = true;  // function require display to be updated
       else currentMenu[currentItemIndex].action();  // Only execute code without requiring to update the display
-    } 
-    
+    }
+
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) {  // Enter sub-menu if defined
       headerStack[menuDepth] = currentMenu[currentItemIndex].title;  // Push current menu title onto the stack to update the header
       // Push current menu onto the stack before entering submenu
@@ -200,8 +200,8 @@ void selectHighlightedMenu() {
       displayStartItemIndex = 0;
       displaySelectedItemIndex = 0;
       currentItemIndex = 0;
-    } 
-    
+    }
+
     else if (currentItemIndex == (getMenuItemCount(currentMenu) - 1) && menuDepth > 0) {  // Go back if select 'back' option in sub-menu
       // "Back" option: Pop the previous menu from the stack
       currentMenu = menuStack[--menuDepth];
@@ -253,7 +253,9 @@ void drawMenu() {
   if (displayingScreen) {  // Check if function require to update the display
     currentMenu[currentItemIndex].action();
     if (selectButton.pressed()) displayingScreen = false;
-  } else {
+  } 
+  
+  else {
     drawHeader(headerStack[menuDepth - 1]);
     drawMenuList();
     highlightSelectedItem();
@@ -262,17 +264,14 @@ void drawMenu() {
     u8g2.drawHLine(0, 54, 128);  // Draw a horizontal line at the footer
     u8g2.setFont(u8g2_font_minuteconsole_mr);  // Set font for footer
     u8g2.drawStr(128 - (strlen(version) * 5), 63, version);  // Draw the version information at the bottom right
-
-    u8g2.sendBuffer();  // Send the buffer to the display
   }
+  u8g2.sendBuffer();  // Send the buffer to the display
 }
 
 // Dummy function for testing
 void underDevelopment() {
-  u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_6x13_tr);
   u8g2.drawStr(13, 37, "Under Development");
-  u8g2.sendBuffer();
 }
 
 void setup() {
