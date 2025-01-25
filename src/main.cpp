@@ -95,11 +95,11 @@ MenuItem daikinAcMenu[] = {
 
 MenuItem irSendMenu[] = {
   {"Deka Fan", dekaFanMenu, nullptr, false},
-  {"Living Room Fan", FFTFanMenu, nullptr, false},
-  {"LG TV", LGTVMenu, nullptr, false},
-  {"Astro", astroMenu, nullptr, false},
   {"Sharp A/C", sharpAcMenu, nullptr, false},
   {"Daikin A/C", daikinAcMenu, nullptr, false},
+  {"LG TV", LGTVMenu, nullptr, false},
+  {"Astro", astroMenu, nullptr, false},
+  {"Living Room Fan", FFTFanMenu, nullptr, false},
   {"Back", nullptr, nullptr, false},  // Back button (ONLY FOR SUB-MENU)
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
