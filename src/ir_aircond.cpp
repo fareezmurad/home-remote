@@ -80,9 +80,6 @@ void sharpAcUI() {
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string
 
-  u8g2.clearBuffer();
-  u8g2.setFontMode(1);
-  u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_profont29_tr);
   // sharpSetModeIndex: 0 = Auto, 1 = Dry
   u8g2.drawStr(2, 41, sharpSetModeIndex == 0 || sharpSetModeIndex == 1 ? "--" : tempStr);
@@ -98,7 +95,6 @@ void sharpAcUI() {
   u8g2.drawStr(103, 57, sharpGetSwingString(sharpSetSwing));
   u8g2.drawRFrame(56, 42, 72, 22, 4);
   u8g2.setDrawColor(1);
-  u8g2.sendBuffer();
 
   sharpAcChkInactivity();  // Automatically sends IR signal after inactivity
 }
@@ -195,9 +191,6 @@ void daikinAcUI() {
   char tempStr[4];  // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", daikinSetTemp);  // Convert temperature to string
 
-  u8g2.clearBuffer();
-  u8g2.setFontMode(1);
-  u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_profont29_tr);
   u8g2.drawStr(2, 41, tempStr);
   u8g2.drawXBMP(36, 22, 16, 16, celcius_bits);
@@ -212,7 +205,6 @@ void daikinAcUI() {
   u8g2.drawStr(103, 57, daikinGetSwingString(daikinSetSwing));
   u8g2.drawRFrame(56, 42, 72, 22, 4);
   u8g2.setDrawColor(1);
-  u8g2.sendBuffer();
 
   daikinAcChkInactivity();  // Automatically sends IR signal after inactivity
 }

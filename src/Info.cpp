@@ -42,8 +42,6 @@ void displayInfo() {
   strcpy(versionInfo, versionTitle);
   strcat(versionInfo, version);
 
-  u8g2.setFontMode(1);
-  u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_4x6_tr);
   u8g2.drawStr(0, 13, "Project: Home Remote");
   u8g2.drawStr(0, 26, versionInfo);
