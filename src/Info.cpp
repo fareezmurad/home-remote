@@ -42,7 +42,6 @@ void displayInfo() {
   strcpy(versionInfo, versionTitle);
   strcat(versionInfo, version);
 
-  u8g2.clearBuffer();
   u8g2.setFontMode(1);
   u8g2.setBitmapMode(1);
   u8g2.setFont(u8g2_font_4x6_tr);
@@ -50,12 +49,9 @@ void displayInfo() {
   u8g2.drawStr(0, 26, versionInfo);
   u8g2.drawStr(0, 39, "Created by: beMiracle.");
   u8g2.drawStr(0, 53, "Contact: fareezmurad@yahoo.com");
-  u8g2.sendBuffer();
 }
 
 void displayQr() {
-  u8g2.clearBuffer();
   u8g2.setBitmapMode(1);
   u8g2.drawXBMP(32, 0, 64, 64, bitmap_QR_Code);
-  u8g2.sendBuffer();
 }
