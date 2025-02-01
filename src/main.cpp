@@ -27,7 +27,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.90.01";
+const char *version = "v1.91.00";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -152,6 +152,11 @@ int displayStartItemIndex = 0;  // Track the starting index of the displayed men
 
 // Global flag to track if a non-menu screen is being displayed
 bool displayingScreen = false;
+
+// Variable to optimize power usage
+unsigned long lastActivityTime = 0;
+const unsigned long DISPLAY_TIMEOUT = 30000;
+bool displayisActive = true;
 
 // Function to draw the header
 void drawHeader(const char *header) {
@@ -297,6 +302,20 @@ void loop() {
 
   // Update the button states
   selectButton.update();
+
+  // Display wake-up and timeout event for saving power
+  if (encoderCurrentRead != encoderLastRead || selectButton.pressed()) {
+    lastActivityTime = millis();
+    if (!displayisActive) {
+      u8g2.setPowerSave(0);
+      displayisActive = true;
+    }
+  }
+
+  if (displayisActive && (millis() - lastActivityTime > DISPLAY_TIMEOUT)) {
+    u8g2.setPowerSave(1);
+    displayisActive = false;
+  }
 
   // Draw the menu on the OLED display
   drawMenu();
