@@ -19,7 +19,6 @@
 #define DEBUG_MENU_ITEM 0         // 📜 Debug menu navigation and selected items
 #define DEBUG_DISPLAY_TIMEOUT 0   // 💤 Debug display wake-up and timeout events
 
-
 // Define pin numbers
 #define CLK 27
 #define DT 25
@@ -292,6 +291,9 @@ void underDevelopment() {
 
 void setup() {
   Serial.begin(115200);  // Initialize serial communication
+#if DEBUG_ENABLE
+  Serial.println("Debug mode: ENABLE");
+#endif
   u8g2.begin();  // Initialize the OLED display
   initIrGeneral();  // Initialize the IR LED for general electrical appliances
   initIrAirCond();  // Initialize the IR LED for Air-Conditioner
