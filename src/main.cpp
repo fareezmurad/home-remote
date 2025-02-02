@@ -9,6 +9,17 @@
 #include "ir_aircond.h"
 #include "ir_general.h"
 
+// Debugging Configuration
+// Set DEBUG_ENABLE to 1️⃣ to enable debugging globally, or 0️⃣ to disable all debugging output.
+// Individual debug options (below) must also be set to 1️⃣ to enable specific debugging features.
+// Example: To debug the encoder, both DEBUG_ENABLE and DEBUG_ENCODER must be set to 1️⃣.
+
+#define DEBUG_ENABLE 0            // 🟢 Master switch for debugging (1 = Enable, 0 = Disable)
+#define DEBUG_ENCODER 0           // 🎛️ Debug rotary encoder activity
+#define DEBUG_MENU_ITEM 0         // 📜 Debug menu navigation and selected items
+#define DEBUG_DISPLAY_TIMEOUT 0   // 💤 Debug display wake-up and timeout events
+
+
 // Define pin numbers
 #define CLK 27
 #define DT 25
@@ -258,8 +269,8 @@ void drawMenu() {
   if (displayingScreen) {  // Check if function require to update the display
     currentMenu[currentItemIndex].action();
     if (selectButton.pressed()) displayingScreen = false;
-  } 
-  
+  }
+
   else {
     drawHeader(headerStack[menuDepth - 1]);
     drawMenuList();
@@ -303,22 +314,41 @@ void loop() {
   // Update the button states
   selectButton.update();
 
-  // Display wake-up and timeout event for saving power
+  // Draw the menu on the OLED display
+  drawMenu();
+
+  // Monitor user activity and manage display wake-up & timeout to save power
+  // Debugging messages are included for better visibility
   if (encoderCurrentRead != encoderLastRead || selectButton.pressed()) {
     lastActivityTime = millis();
+#if DEBUG_ENABLE && DEBUG_ENCODER
+    Serial.println("Current encoder value: " + String(encoderCurrentRead));
+    Serial.println("Previous encoder value: " + String(encoderLastRead));
+    Serial.println();
+#endif
+#if DEBUG_ENABLE && DEBUG_MENU_ITEM
+    Serial.print("Header: ");
+    Serial.println(menuDepth > 0 ? headerStack[menuDepth - 1] : "Main Menu");
+    Serial.print("Highlighted menu: ");
+    Serial.println(currentMenu[currentItemIndex].title);
+    Serial.println();
+#endif
     if (!displayisActive) {
       u8g2.setPowerSave(0);
       displayisActive = true;
+#if DEBUG_ENABLE && DEBUG_DISPLAY_TIMEOUT
+      Serial.println("Display is awake");
+#endif
     }
   }
 
   if (displayisActive && (millis() - lastActivityTime > DISPLAY_TIMEOUT)) {
     u8g2.setPowerSave(1);
     displayisActive = false;
+#if DEBUG_ENABLE && DEBUG_DISPLAY_TIMEOUT
+    Serial.println("Turn off the display to save power");
+#endif
   }
-
-  // Draw the menu on the OLED display
-  drawMenu();
 
   // Update the rotary encoder values for tracking
   encoderLastRead = encoderCurrentRead;
