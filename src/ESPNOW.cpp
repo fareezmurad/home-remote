@@ -91,7 +91,7 @@ void sendSwitchData(int switchIndex) {
 
     if (result == ESP_OK) {
       Serial.println("Sent with success");
-      deInitESPNow();
+      deInitESPNow();  // Turn off WiFi after successfully sending the data
     } else {
       Serial.println("Error sending the data");
     }
