@@ -14,10 +14,10 @@
 // Individual debug options (below) must also be set to 1️⃣ to enable specific debugging features.
 // Example: To debug the encoder, both DEBUG_ENABLE and DEBUG_ENCODER must be set to 1️⃣.
 
-#define DEBUG_ENABLE 0            // 🟢 Master switch for debugging (1 = Enable, 0 = Disable)
-#define DEBUG_ENCODER 0           // 🎛️ Debug rotary encoder activity
-#define DEBUG_MENU_ITEM 0         // 📜 Debug menu navigation and selected items
-#define DEBUG_DISPLAY_TIMEOUT 0   // 💤 Debug display wake-up and timeout events
+#define DEBUG_ENABLE 0           // 🟢 Master switch for debugging (1 = Enable, 0 = Disable)
+#define DEBUG_ENCODER 0          // 🎛️ Debug rotary encoder activity
+#define DEBUG_MENU_ITEM 0        // 📜 Debug menu navigation and selected items
+#define DEBUG_DISPLAY_TIMEOUT 0  // 💤 Debug display wake-up and timeout events
 
 // Define pin numbers
 #define CLK 27
@@ -144,10 +144,10 @@ int getMenuItemCount(MenuItem *menu) {
 
 // Track current menu state, menu history, header and menu depth for nested menus
 MenuItem *currentMenu = mainMenu;
-const int MAX_MENU_DEPTH = 10;  // Max levels of menu nesting
-MenuItem *menuStack[MAX_MENU_DEPTH];  // Stack to store menu history
+const int MAX_MENU_DEPTH = 10;            // Max levels of menu nesting
+MenuItem *menuStack[MAX_MENU_DEPTH];      // Stack to store menu history
 const char *headerStack[MAX_MENU_DEPTH];  // Stack to store current and previous display header
-int menuDepth = 0;  // Current depth in the menu stack
+int menuDepth = 0;                        // Current depth in the menu stack
 
 // Track rotary encoder states
 int encoderCurrentRead = 0;
@@ -158,7 +158,7 @@ int currentItemIndex = 0;
 
 // Track visible display menu indexes for scrolling
 int displaySelectedItemIndex = 0;  // Index of the currently selected item
-int displayStartItemIndex = 0;  // Track the starting index of the displayed menu items
+int displayStartItemIndex = 0;     // Track the starting index of the displayed menu items
 
 // Global flag to track if a non-menu screen is being displayed
 bool displayingScreen = false;
@@ -182,16 +182,16 @@ void drawHeader(const char *header) {
     headerUpper[i] = toupper(headerUpper[i]);
   }
 
-  u8g2.setFont(u8g2_font_spleen8x16_mr);  // Set font for header
+  u8g2.setFont(u8g2_font_spleen8x16_mr);                                 // Set font for header
   u8g2.drawStr((128 - (strlen(headerUpper) * 8)) / 2, 10, headerUpper);  // Draw the capitalized header text
-  u8g2.drawHLine(0, 12, 128);  // Draw a horizontal line below the header
+  u8g2.drawHLine(0, 12, 128);                                            // Draw a horizontal line below the header
 }
 
 // Function to draw the list up to 3 menu items
 void drawMenuList() {
   for (int i = 0; i < 3; i++) {
-    int yPos = (i * 12) + 25;  // Calculate the y position for each menu item
-    u8g2.setFont(u8g2_font_spleen6x12_mr);  // Set font for menu items
+    int yPos = (i * 12) + 25;                                             // Calculate the y position for each menu item
+    u8g2.setFont(u8g2_font_spleen6x12_mr);                                // Set font for menu items
     u8g2.drawStr(1, yPos, currentMenu[displayStartItemIndex + i].title);  // Draw the menu item
   }
 }
@@ -203,11 +203,11 @@ void selectHighlightedMenu() {
 
       // Check if the action requires display update
       if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = true;  // function require display to be updated
-      else currentMenu[currentItemIndex].action();  // Only execute code without requiring to update the display
+      else currentMenu[currentItemIndex].action();                                      // Only execute code without requiring to update the display
     }
 
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) {  // Enter sub-menu if defined
-      headerStack[menuDepth] = currentMenu[currentItemIndex].title;  // Push current menu title onto the stack to update the header
+      headerStack[menuDepth] = currentMenu[currentItemIndex].title;                             // Push current menu title onto the stack to update the header
       // Push current menu onto the stack before entering submenu
       menuStack[menuDepth++] = currentMenu;
       currentMenu = currentMenu[currentItemIndex].subMenu;
@@ -233,9 +233,9 @@ void highlightSelectedItem() {
   int totalMenuItems = getMenuItemCount(currentMenu);  // Get total current menu count
 
   const int visibleItemsCount = min(totalMenuItems - displayStartItemIndex, 3);  // Limit to the number of items being displayed
-  int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15;  // Calculate y position for the highlighted item
+  int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15;                       // Calculate y position for the highlighted item
 
-  u8g2.setDrawColor(2);  // Set draw color for the highlight
+  u8g2.setDrawColor(2);            // Set draw color for the highlight
   u8g2.drawBox(0, yPos, 128, 13);  // Draw a box to highlight the selected item
 
   // Handle encoder rotation for menu navigation
@@ -245,7 +245,7 @@ void highlightSelectedItem() {
     if (currentItemIndex > totalMenuItems - 1) currentItemIndex = totalMenuItems - 1;  // Prevent overflow
 
     if (displaySelectedItemIndex < visibleItemsCount - 1) displaySelectedItemIndex++;  // Move down in the currently visible items
-    else if (displayStartItemIndex + 3 < totalMenuItems) displayStartItemIndex++;  // Scroll down the list
+    else if (displayStartItemIndex + 3 < totalMenuItems) displayStartItemIndex++;      // Scroll down the list
   }
 
   if (encoderLastRead > encoderCurrentRead) {
@@ -254,15 +254,15 @@ void highlightSelectedItem() {
     if (currentItemIndex < 0) currentItemIndex = 0;  // Prevent overflow
 
     if (displaySelectedItemIndex > 0) displaySelectedItemIndex--;  // Move up in the currently visible items
-    else if (displayStartItemIndex > 0) displayStartItemIndex--;  // Scroll up the list
+    else if (displayStartItemIndex > 0) displayStartItemIndex--;   // Scroll up the list
   }
   selectHighlightedMenu();
 }
 
 // Function to draw the entire menu screen
 void drawMenu() {
-  u8g2.clearBuffer();  // Clear the display buffer
-  u8g2.setFontMode(1);  // Set font mode
+  u8g2.clearBuffer();     // Clear the display buffer
+  u8g2.setFontMode(1);    // Set font mode
   u8g2.setBitmapMode(1);  // Set bitmap mode
 
   if (displayingScreen) {  // Check if function require to update the display
@@ -276,8 +276,8 @@ void drawMenu() {
     highlightSelectedItem();
 
     // Footer with version info
-    u8g2.drawHLine(0, 54, 128);  // Draw a horizontal line at the footer
-    u8g2.setFont(u8g2_font_minuteconsole_mr);  // Set font for footer
+    u8g2.drawHLine(0, 54, 128);                              // Draw a horizontal line at the footer
+    u8g2.setFont(u8g2_font_minuteconsole_mr);                // Set font for footer
     u8g2.drawStr(128 - (strlen(version) * 5), 63, version);  // Draw the version information at the bottom right
   }
   u8g2.sendBuffer();  // Send the buffer to the display
@@ -294,18 +294,18 @@ void setup() {
 #if DEBUG_ENABLE
   Serial.println("Debug mode: ENABLE");
 #endif
-  u8g2.begin();  // Initialize the OLED display
-  initIrGeneral();  // Initialize the IR LED for general electrical appliances
-  initIrAirCond();  // Initialize the IR LED for Air-Conditioner
+  u8g2.begin();           // Initialize the OLED display
+  initIrGeneral();        // Initialize the IR LED for general electrical appliances
+  initIrAirCond();        // Initialize the IR LED for Air-Conditioner
   dataUpdateOnStartup();  // Update Home Automation Data
 
   // Configure the rotary encoder
-  rotaryEncoder.attachHalfQuad(DT, CLK);
+  rotaryEncoder.attachFullQuad(DT, CLK);
   rotaryEncoder.setCount(0);
 
   // Configure the select button
   selectButton.attach(SELECT_BUTTON, INPUT);
-  selectButton.interval(5);  // Set debounce interval
+  selectButton.interval(5);           // Set debounce interval
   selectButton.setPressedState(LOW);  // Set pressed state for active-low logic
 }
 
