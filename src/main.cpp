@@ -300,7 +300,7 @@ void setup() {
   dataUpdateOnStartup();  // Update Home Automation Data
 
   // Configure the rotary encoder
-  rotaryEncoder.attachFullQuad(DT, CLK);
+  rotaryEncoder.attachHalfQuad(DT, CLK);
   rotaryEncoder.setCount(0);
 
   // Configure the select button
