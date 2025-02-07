@@ -123,7 +123,6 @@ MenuItem homeAutomationMenu[] = {
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
-void underDevelopment();
 MenuItem mainMenu[] = {
   {"Home Automation", homeAutomationMenu, nullptr, false},
   {"IR Remote", irSendMenu, nullptr, false},
@@ -281,12 +280,6 @@ void drawMenu() {
     u8g2.drawStr(128 - (strlen(version) * 5), 63, version);  // Draw the version information at the bottom right
   }
   u8g2.sendBuffer();  // Send the buffer to the display
-}
-
-// Dummy function for testing
-void underDevelopment() {
-  u8g2.setFont(u8g2_font_6x13_tr);
-  u8g2.drawStr(13, 37, "Under Development");
 }
 
 void setup() {

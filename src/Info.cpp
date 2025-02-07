@@ -53,3 +53,9 @@ void displayQr() {
   u8g2.setBitmapMode(1);
   u8g2.drawXBMP(32, 0, 64, 64, bitmap_QR_Code);
 }
+
+// Dummy function for testing
+void underDevelopment() {
+  u8g2.setFont(u8g2_font_6x13_tr);
+  u8g2.drawStr(13, 37, "Under Development");
+}

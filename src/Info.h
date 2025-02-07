@@ -9,5 +9,6 @@ extern const char *version;
 
 void displayInfo();
 void displayQr();
+void underDevelopment();
 
 #endif
