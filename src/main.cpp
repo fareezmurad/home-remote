@@ -166,6 +166,7 @@ bool displayingScreen = false;
 unsigned long lastActivityTime = 0;
 const unsigned long DISPLAY_TIMEOUT = 30000;
 bool displayisActive = true;
+bool displayRefresh = true;
 
 // Function to draw the header
 void drawHeader(const char *header) {
@@ -195,6 +196,7 @@ void drawMenuList() {
   }
 }
 
+// clang-format off
 // Handle "select" button press for menu navigation
 void selectHighlightedMenu() {
   if (selectButton.pressed()) {
@@ -229,8 +231,7 @@ void selectHighlightedMenu() {
 
 // Draw and highlight the currently selected menu item
 void highlightSelectedItem() {
-  int totalMenuItems = getMenuItemCount(currentMenu);  // Get total current menu count
-
+  int totalMenuItems = getMenuItemCount(currentMenu);                            // Get total current menu count
   const int visibleItemsCount = min(totalMenuItems - displayStartItemIndex, 3);  // Limit to the number of items being displayed
   int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15;                       // Calculate y position for the highlighted item
 
@@ -258,6 +259,7 @@ void highlightSelectedItem() {
   selectHighlightedMenu();
 }
 
+// clang-format on
 // Function to draw the entire menu screen
 void drawMenu() {
   u8g2.clearBuffer();     // Clear the display buffer
@@ -310,12 +312,18 @@ void loop() {
   selectButton.update();
 
   // Draw the menu on the OLED display
-  drawMenu();
+  if (displayRefresh) {
+    drawMenu();
+    if ((millis() - lastActivityTime) > 1000) {
+      displayRefresh = false;
+    }
+  }
 
   // Monitor user activity and manage display wake-up & timeout to save power
   // Debugging messages are included for better visibility
   if (encoderCurrentRead != encoderLastRead || selectButton.pressed()) {
     lastActivityTime = millis();
+    displayRefresh = true;
 #if DEBUG_ENABLE && DEBUG_ENCODER
     Serial.println("Current encoder value: " + String(encoderCurrentRead));
     Serial.println("Previous encoder value: " + String(encoderLastRead));
