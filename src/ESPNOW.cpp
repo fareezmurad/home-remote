@@ -1,5 +1,6 @@
 #include "ESPNOW.h"
 
+#define STATUS_INDICATOR 2
 #define SELECT_BUTTON 32
 
 // REPLACE WITH YOUR RECEIVER MAC Address
@@ -28,8 +29,10 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
 void printWiFiState() {
   if (WiFi.getMode() == WIFI_OFF) {
+    digitalWrite(STATUS_INDICATOR, LOW);
     Serial.println("Wi-Fi is OFF");
   } else {
+    digitalWrite(STATUS_INDICATOR, HIGH);
     Serial.println("Wi-Fi is ON");
   }
 }
