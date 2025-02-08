@@ -164,7 +164,8 @@ bool displayingScreen = false;
 
 // Variable to optimize power usage
 unsigned long lastActivityTime = 0;
-const unsigned long DISPLAY_TIMEOUT = 30000;
+const unsigned long DISPLAY_TIMEOUT = 15000;     // 15 seconds
+const unsigned long ESP_SLEEP_TIMEOUT = 120000;  // 2 minutes
 bool displayisActive = true;
 bool displayRefresh = true;
 
@@ -303,6 +304,9 @@ void setup() {
   selectButton.attach(SELECT_BUTTON, INPUT);
   selectButton.interval(5);           // Set debounce interval
   selectButton.setPressedState(LOW);  // Set pressed state for active-low logic
+
+  // Enable EXT0 wake-up on select button (rising edge)
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)SELECT_BUTTON, 0);
 }
 
 void loop() {
@@ -355,6 +359,8 @@ void loop() {
     Serial.println("Turn off the display to save power");
 #endif
   }
+
+  if (!displayisActive && (millis() - lastActivityTime > ESP_SLEEP_TIMEOUT)) esp_deep_sleep_start();
 
   // Update the rotary encoder values for tracking
   encoderLastRead = encoderCurrentRead;
