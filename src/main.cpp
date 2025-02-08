@@ -203,8 +203,8 @@ void selectHighlightedMenu() {
     if (currentMenu[currentItemIndex].action != nullptr) {  // Execute action if defined
 
       // Check if the action requires display update
-      if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = true;  // function require display to be updated
-      else currentMenu[currentItemIndex].action();                                      // Only execute code without requiring to update the display
+      if (currentMenu[currentItemIndex].requireUpdateDisplay) displayingScreen = !displayingScreen;  // function require display to be updated
+      else currentMenu[currentItemIndex].action();                                                   // Only execute code without requiring to update the display
     }
 
     else if (currentMenu[currentItemIndex].subMenu != nullptr && menuDepth < MAX_MENU_DEPTH) {  // Enter sub-menu if defined
@@ -259,7 +259,6 @@ void encoderHandler() {
     if (displaySelectedItemIndex > 0) displaySelectedItemIndex--;  // Move up in the currently visible items
     else if (displayStartItemIndex > 0) displayStartItemIndex--;   // Scroll up the list
   }
-  selectHighlightedMenu();
 }
 
 // clang-format on
@@ -271,7 +270,6 @@ void drawMenu() {
 
   if (displayingScreen) {  // Check if function require to update the display
     currentMenu[currentItemIndex].action();
-    if (selectButton.pressed()) displayingScreen = false;
   }
 
   else {
@@ -327,7 +325,8 @@ void loop() {
   if (encoderCurrentRead != encoderLastRead || selectButton.pressed()) {
     lastActivityTime = millis();
     displayRefresh = true;
-    encoderHandler();
+    selectHighlightedMenu();
+    if (!displayingScreen) encoderHandler();
 #if DEBUG_ENABLE && DEBUG_ENCODER
     Serial.println("Current encoder value: " + String(encoderCurrentRead));
     Serial.println("Previous encoder value: " + String(encoderLastRead));
