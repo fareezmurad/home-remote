@@ -76,3 +76,15 @@ void underDevelopment() {
   u8g2.setFont(u8g2_font_6x13_tr);
   u8g2.drawStr(13, 37, "Under Development");
 }
+
+void exitToSleep() {
+  // Optionally display a "Confirm Sleep" screen first
+  // Then execute deep sleep:
+  u8g2.setFont(u8g2_font_6x13_tr);
+  u8g2.drawStr(5, 37, "Going to sleep...");
+  u8g2.sendBuffer();
+  delay(1500);
+  u8g2.setPowerSave(1);
+  delay(1000);
+  esp_deep_sleep_start();
+}

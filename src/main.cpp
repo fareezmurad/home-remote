@@ -129,7 +129,7 @@ MenuItem mainMenu[] = {
   {"IR Remote", irSendMenu, nullptr, false},
   {"QR Codes", nullptr, displayQr, true},
   {"Information", nullptr, displayInfo, true},
-  {"Exit", nullptr, underDevelopment, true},
+  {"Exit", nullptr, exitToSleep, true},
   {nullptr, nullptr, nullptr, false}  // Count terminator. REQUIRED FOR EVERY MENU!
 };
 
