@@ -54,6 +54,23 @@ void displayQr() {
   u8g2.drawXBMP(32, 0, 64, 64, bitmap_QR_Code);
 }
 
+// To check display activity
+int fpsCounter() {
+  static unsigned long startCount = millis();
+  static int frameCount = 0;
+  static float fps = 0;
+
+  frameCount++;
+
+  unsigned long stopCount = millis();
+  unsigned long durationCount = (stopCount - startCount);
+
+  if (durationCount > 500) {
+    fps = (frameCount * 1000) / durationCount;
+  }
+  return fps;
+}
+
 // Dummy function for testing
 void underDevelopment() {
   u8g2.setFont(u8g2_font_6x13_tr);

@@ -9,6 +9,7 @@ extern const char *version;
 
 void displayInfo();
 void displayQr();
+int fpsCounter();
 void underDevelopment();
 
 #endif
