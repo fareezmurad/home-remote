@@ -5,9 +5,9 @@
 #include <U8g2lib.h>
 
 #include "ESPNOW.h"
-#include "utils.h"
 #include "ir_aircond.h"
 #include "ir_general.h"
+#include "utils.h"
 
 // Debugging Configuration
 // Set DEBUG_ENABLE to 1️⃣ to enable debugging globally, or 0️⃣ to disable all debugging output.
@@ -37,7 +37,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.91.00";
+const char *version = "v1.92.00";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -231,13 +231,16 @@ void selectHighlightedMenu() {
 
 // Draw and highlight the currently selected menu item
 void highlightSelectedItem() {
-  int totalMenuItems = getMenuItemCount(currentMenu);                            // Get total current menu count
-  const int visibleItemsCount = min(totalMenuItems - displayStartItemIndex, 3);  // Limit to the number of items being displayed
-  int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15;                       // Calculate y position for the highlighted item
+  int yPos = (min(displaySelectedItemIndex, 3) * 12) + 15;  // Calculate y position for the highlighted item
 
   u8g2.setDrawColor(2);            // Set draw color for the highlight
   u8g2.drawBox(0, yPos, 128, 13);  // Draw a box to highlight the selected item
+}
 
+void encoderHandler() {
+  int totalMenuItems = getMenuItemCount(currentMenu);                            // Get total current menu count
+  const int visibleItemsCount = min(totalMenuItems - displayStartItemIndex, 3);  // Limit to the number of items being displayed
+  
   // Handle encoder rotation for menu navigation
   if (encoderCurrentRead > encoderLastRead) {
     currentItemIndex++;
@@ -324,6 +327,7 @@ void loop() {
   if (encoderCurrentRead != encoderLastRead || selectButton.pressed()) {
     lastActivityTime = millis();
     displayRefresh = true;
+    encoderHandler();
 #if DEBUG_ENABLE && DEBUG_ENCODER
     Serial.println("Current encoder value: " + String(encoderCurrentRead));
     Serial.println("Previous encoder value: " + String(encoderLastRead));
