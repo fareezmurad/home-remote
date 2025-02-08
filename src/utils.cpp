@@ -1,4 +1,4 @@
-#include "Info.h"
+#include "utils.h"
 
 // 'QR Code', 64x64px
 const unsigned char bitmap_QR_Code[] PROGMEM = {

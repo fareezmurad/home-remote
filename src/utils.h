@@ -1,5 +1,5 @@
-#ifndef INFO_H
-#define INFO_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <U8g2lib.h>
 
