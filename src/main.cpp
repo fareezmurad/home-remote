@@ -125,8 +125,9 @@ MenuItem homeAutomationMenu[] = {
 };
 
 MenuItem mainMenu[] = {
-  {"Home Automation", homeAutomationMenu, nullptr, false},
   {"IR Remote", irSendMenu, nullptr, false},
+  {"Home Automation", homeAutomationMenu, nullptr, false},
+  {"WebSocket Client", nullptr, underDevelopment, true},
   {"QR Codes", nullptr, displayQr, true},
   {"Information", nullptr, displayInfo, true},
   {"Exit", nullptr, exitToSleep, true},
