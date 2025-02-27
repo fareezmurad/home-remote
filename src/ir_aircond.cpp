@@ -58,12 +58,12 @@ static const unsigned char celcius_bits[] U8X8_PROGMEM = {
 /*========================== SHARP AIR-CONDITIONER ===========================*/
 bool currentPowerState; // Track current power state. Initial value will be called from NVS
 
-uint8_t sharpSetTemp = 20;  // Default temperature setting
+uint8_t sharpSetTemp;  // Initial temperature setting (NVS)
 
-uint8_t sharpSetModeIndex = 0;  // Initial AC mode index
+uint8_t sharpSetModeIndex;  // Initial AC mode index (from NVS)
 const uint8_t sharpSetMode[3] = {kSharpAcFan, kSharpAcDry, kSharpAcCool};
 const char* sharpSetModeLabel[3] = {"Auto", "Dry", "Cool"};
-uint8_t sharpSetFanIndex = 0;  // Initial fan speed index
+uint8_t sharpSetFanIndex;  // Initial fan speed index (NVS)
 const uint8_t sharpSetFan[4] = {kSharpAcFanAuto, kSharpAcFanMin, kSharpAcFanMed, kSharpAcFanMax};
 const char* sharpSetFanLabel[4] = {"Auto", "Min", "Med", "Max"};
 
@@ -137,6 +137,7 @@ void sharpAcChkInactivity() {
 // Set temperature within valid range (16-30°C). Only for cool mode
 void sharpAcSetTemp() {
   if (sharpSetModeIndex == 2) inputEncoder(sharpSetTemp, 16, 30);  //  2 = cool
+  preferences.putInt("sharpTemp", sharpSetTemp);
 }
 void sharpAcSetTempUI() {
   sharpAcSetTemp();
@@ -146,6 +147,7 @@ void sharpAcSetTempUI() {
 // Set fan speed based on current AC mode. Only for cool mode
 void sharpAcSetFan() {
   if (sharpSetModeIndex == 2) inputEncoder(sharpSetFanIndex, 0, 3);  // 2 = cool
+  preferences.putInt("sharpFan", sharpSetFanIndex);
 }
 void sharpAcSetFanUI() {
   sharpAcSetFan();
@@ -156,6 +158,7 @@ void sharpAcSetFanUI() {
 void sharpAcSetMode() {
   inputEncoder(sharpSetModeIndex, 0, 2);
   sharpValidateFanSetting();
+  preferences.putInt("sharpMode", sharpSetModeIndex);
 }
 void sharpAcSetModeUI() {
   sharpAcSetMode();
@@ -296,4 +299,7 @@ void daikinAcSetSwingUI() {
 void initNVS() {
   preferences.begin("storage", false);  // False -> read/write. True -> read-only
   currentPowerState = preferences.getBool("sharpAcState", false);  // Get last power state value from NVS
+  sharpSetTemp = preferences.getInt("sharpTemp", 20);              // Get last value of sharp temperature, Default 20
+  sharpSetModeIndex = preferences.getInt("sharpMode", 0);          // Get last value of sharp mode, Default 0
+  sharpSetFanIndex = preferences.getInt("sharpFan", 0);            // Get last value of sharp fan mode. Default 0
 }

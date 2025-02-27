@@ -38,7 +38,7 @@ ESP32Encoder rotaryEncoder;
 Bounce2::Button selectButton = Bounce2::Button();
 
 // Version info
-const char *version = "v1.92.00";
+const char *version = "v1.93.00";
 
 // Menu item structure for title, optional submenu, action and state of display for action
 struct MenuItem {
@@ -295,7 +295,7 @@ void setup() {
 #endif
   u8g2.begin();                       // Initialize the OLED display
   pinMode(STATUS_INDICATOR, OUTPUT);  // Initialize built-in LED
-  initNVS();
+  initNVS();                          // Initialize NVS and it items
   initIrGeneral();                    // Initialize the IR LED for general electrical appliances
   initIrAirCond();                    // Initialize the IR LED for Air-Conditioner
   dataUpdateOnStartup();              // Update Home Automation Data
