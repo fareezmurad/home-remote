@@ -295,6 +295,7 @@ void setup() {
 #endif
   u8g2.begin();                       // Initialize the OLED display
   pinMode(STATUS_INDICATOR, OUTPUT);  // Initialize built-in LED
+  initNVS();
   initIrGeneral();                    // Initialize the IR LED for general electrical appliances
   initIrAirCond();                    // Initialize the IR LED for Air-Conditioner
   dataUpdateOnStartup();              // Update Home Automation Data

@@ -1,8 +1,12 @@
 #include "ir_aircond.h"
 
 #include <IRremoteESP8266.h>
+#include <Preferences.h>
 #include <ir_Daikin.h>
 #include <ir_Sharp.h>
+
+// Instances for NVS(Non-Volatile Storage)
+Preferences preferences;
 
 // Instances for sending IR signals
 IRSharpAc sharpAc(IR_LED);
@@ -14,7 +18,7 @@ void initIrAirCond() {
   daikinAc.begin();
 }
 
-/* ------------------- General variables and functions for AC control ------------------ */
+/*=================== General variables and functions for AC control =====================*/
 bool irSignalSent = true;  // Tracks wether IR signal has been sent
 unsigned long lastInputTime = 0;  // Records timestamp of last encoder input
 const unsigned long inactivityDuration = 2000;  // Duration (ms) before sending IR automatically
@@ -51,8 +55,8 @@ static const unsigned char celcius_bits[] U8X8_PROGMEM = {
   0x06, 0xd4, 0x02, 0x54, 0x02, 0x54, 0x06, 0x92, 0x1c, 0x39, 0x01,
   0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
 
-/*-------------------------SHARP AIR-CONDITIONER-------------------------*/
-bool currentPowerState = false;  // Tracks the power state of the Sharp AC
+/*========================== SHARP AIR-CONDITIONER ===========================*/
+bool currentPowerState; // Track current power state. Initial value will be called from NVS
 
 uint8_t sharpSetTemp = 20;  // Default temperature setting
 
@@ -117,6 +121,7 @@ void sharpAcPowerToggle() {
     sharpAc.on();
     currentPowerState = true;
   }
+  preferences.putBool("sharpAcState", currentPowerState);
   sharpAc.send();
 }
 
@@ -164,7 +169,7 @@ void sharpAcSetSwingUI() {
   sharpAcUI();
 }
 
-/*-------------------------DAIKIN AIR-CONDITIONER-------------------------*/
+/*========================== DAIKIN AIR-CONDITIONER ==========================*/
 uint8_t daikinSetTemp = 20;  // Default temperature setting
 
 uint8_t daikinSetModeIndex = 2;  // Initial AC mode index
@@ -268,4 +273,27 @@ void daikinAcSetSwing() { toggleEncoder(daikinSetSwing); }
 void daikinAcSetSwingUI() {
   daikinAcSetSwing();
   daikinAcUI();
+}
+
+/*============================ NON-VOLATILE STORAGE (NVS) ==============================*/
+// Function to initialize NVS (Non-Volatile Storage) and retrieve stored values.
+// --------------------------------------------------------------------------------------
+// This function **must** be placed at the bottom of the code to prevent issues with
+// accessing undeclared variables.  
+// 
+// Why?
+// - NVS stores persistent data, such as power state, across device reboots.
+// - When this function runs, it retrieves stored values and assigns them to global variables.
+// - Those global variables **must be declared before this function is called**, or else
+//   the compiler will throw an error due to missing variable definitions.
+//
+// Placement rule:
+// - All related variables should be declared **before** this function appears in the code.
+// - This ensures that when NVS loads stored values, the required variables already exist.
+//
+// If modifying or adding more settings to NVS, make sure their corresponding variables
+// are declared **before** this function to avoid runtime errors or unexpected behavior.
+void initNVS() {
+  preferences.begin("storage", false);  // False -> read/write. True -> read-only
+  currentPowerState = preferences.getBool("sharpAcState", false);  // Get last power state value from NVS
 }
