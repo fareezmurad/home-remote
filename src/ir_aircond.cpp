@@ -19,8 +19,8 @@ void initIrAirCond() {
 }
 
 /*=================== General variables and functions for AC control =====================*/
-bool irSignalSent = true;  // Tracks wether IR signal has been sent
-unsigned long lastInputTime = 0;  // Records timestamp of last encoder input
+bool irSignalSent = true;                       // Tracks wether IR signal has been sent
+unsigned long lastInputTime = 0;                // Records timestamp of last encoder input
 const unsigned long inactivityDuration = 2000;  // Duration (ms) before sending IR automatically
 
 // Resets the inactivity timer and IR sent flag on new input
@@ -56,9 +56,9 @@ static const unsigned char celcius_bits[] U8X8_PROGMEM = {
   0x75, 0x01, 0x7d, 0x01, 0x39, 0x01, 0x82, 0x00, 0x7c, 0x00};
 
 /*========================== SHARP AIR-CONDITIONER ===========================*/
-bool currentPowerState; // Track current power state. Initial value will be called from NVS
+bool currentPowerState;  // Track current power state. Initial value will be called from NVS
 
-uint8_t sharpSetTemp;  // Initial temperature setting (NVS)
+uint8_t sharpSetTemp;  // Default temperature setting (NVS)
 
 uint8_t sharpSetModeIndex;  // Initial AC mode index (from NVS)
 const uint8_t sharpSetMode[3] = {kSharpAcFan, kSharpAcDry, kSharpAcCool};
@@ -81,7 +81,7 @@ void sharpValidateFanSetting() {
 
 // Renders the settings on the OLED display
 void sharpAcUI() {
-  char tempStr[4];  // Buffer to hold temperature as a string
+  char tempStr[4];                       // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", sharpSetTemp);  // Convert temperature to string
 
   u8g2.setFont(u8g2_font_profont29_tr);
@@ -123,6 +123,9 @@ void sharpAcPowerToggle() {
   }
   preferences.putBool("sharpAcState", currentPowerState);
   sharpAc.send();
+#if DEBUG_IR
+  Serial.println("Sharp AC - IR Signal sent!");
+#endif  // DEBUG_IR
 }
 
 // Automatically sends IR signal if there's no input for a set duration
@@ -131,6 +134,9 @@ void sharpAcChkInactivity() {
     sharpAcSetting();
     sharpAc.send();
     irSignalSent = true;
+#if DEBUG_IR
+    Serial.println("Sharp AC - IR Signal sent!");
+#endif  // DEBUG_IR
   }
 }
 
@@ -196,7 +202,7 @@ void daikinValidateFanSetting() {
 
 // Renders the settings on the OLED display
 void daikinAcUI() {
-  char tempStr[4];  // Buffer to hold temperature as a string
+  char tempStr[4];                        // Buffer to hold temperature as a string
   sprintf(tempStr, "%d", daikinSetTemp);  // Convert temperature to string
 
   u8g2.setFont(u8g2_font_profont29_tr);
@@ -230,6 +236,9 @@ void daikinAcPowerToggle() {
   daikinAcSetting();
   daikinAc.setPowerToggle(true);
   daikinAc.send();
+#if DEBUG_IR
+  Serial.println("Daikin AC - IR Signal sent!");
+#endif  // DEBUG_IR
 }
 
 // Automatically sends IR signal if there's no input for a set duration
@@ -239,11 +248,17 @@ void daikinAcChkInactivity() {
     daikinAc.setPowerToggle(false);
     daikinAc.send();
     irSignalSent = true;
+#if DEBUG_IR
+    Serial.println("Daikin AC - IR Signal sent!");
+#endif  // DEBUG_IR
   }
 }
 
 // Set temperature within valid range (16-30°C)
-void daikinAcSetTemp() { inputEncoder(daikinSetTemp, 16, 30); }
+void daikinAcSetTemp() {
+  inputEncoder(daikinSetTemp, 16, 30);
+  preferences.putInt("daikinTemp", daikinSetTemp);
+}
 void daikinAcSetTempUI() {
   daikinAcSetTemp();
   daikinAcUI();
@@ -251,10 +266,9 @@ void daikinAcSetTempUI() {
 
 // Set fan speed based on current AC mode
 void daikinAcSetFan() {
-  if (daikinSetModeIndex == 0)
-    inputEncoder(daikinSetFanIndex, 2, 4);  // Constrain the fan index to Min (2) to Max (4) in Fan mode
-  else
-    inputEncoder(daikinSetFanIndex, 0, 5);  // In other modes, the full range of fan speeds (0-5) is allowed
+  if (daikinSetModeIndex == 0) inputEncoder(daikinSetFanIndex, 2, 4);  // Constrain the fan index to Min (2) to Max (4) in Fan mode
+  else inputEncoder(daikinSetFanIndex, 0, 5);                          // In other modes, the full range of fan speeds (0-5) is allowed
+  preferences.putInt("daikinFan", daikinSetFanIndex);
 }
 void daikinAcSetFanUI() {
   daikinAcSetFan();
@@ -265,6 +279,7 @@ void daikinAcSetFanUI() {
 void daikinAcSetMode() {
   inputEncoder(daikinSetModeIndex, 0, 2);
   daikinValidateFanSetting();
+  preferences.putInt("daikinMode", daikinSetModeIndex);
 }
 void daikinAcSetModeUI() {
   daikinAcSetMode();
@@ -282,8 +297,8 @@ void daikinAcSetSwingUI() {
 // Function to initialize NVS (Non-Volatile Storage) and retrieve stored values.
 // --------------------------------------------------------------------------------------
 // This function **must** be placed at the bottom of the code to prevent issues with
-// accessing undeclared variables.  
-// 
+// accessing undeclared variables.
+//
 // Why?
 // - NVS stores persistent data, such as power state, across device reboots.
 // - When this function runs, it retrieves stored values and assigns them to global variables.
@@ -298,8 +313,15 @@ void daikinAcSetSwingUI() {
 // are declared **before** this function to avoid runtime errors or unexpected behavior.
 void initNVS() {
   preferences.begin("storage", false);  // False -> read/write. True -> read-only
+
+  // Saved preferences for sharp AC
   currentPowerState = preferences.getBool("sharpAcState", false);  // Get last power state value from NVS
   sharpSetTemp = preferences.getInt("sharpTemp", 20);              // Get last value of sharp temperature, Default 20
-  sharpSetModeIndex = preferences.getInt("sharpMode", 0);          // Get last value of sharp mode, Default 0
-  sharpSetFanIndex = preferences.getInt("sharpFan", 0);            // Get last value of sharp fan mode. Default 0
+  sharpSetModeIndex = preferences.getInt("sharpMode", 0);          // Get last value of sharp mode, Default 0 - auto
+  sharpSetFanIndex = preferences.getInt("sharpFan", 0);            // Get last value of sharp fan mode. Default 0 - auto
+
+  // Saved preferences for daikin AC
+  daikinSetTemp = preferences.getInt("daikinTemp", 20);      // Get last value of daikin temperature, Default 20
+  daikinSetModeIndex = preferences.getInt("daikinMode", 2);  // Get last value of daikin mode, Default 2 - cool
+  daikinSetFanIndex = preferences.getInt("daikinFan", 1);    // Get last value of daikin fan mode. Default 1 - auto
 }
