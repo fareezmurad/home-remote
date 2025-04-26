@@ -75,7 +75,10 @@ const char* sharpGetSwingString(bool swing) {
 // Ensures fan speed is reset to "Auto" when the AC mode changes
 void sharpValidateFanSetting() {
   static uint8_t lastModeIndex = 0;
-  if (sharpSetModeIndex != lastModeIndex) sharpSetFanIndex = 0;
+  if (sharpSetModeIndex != lastModeIndex) {
+    sharpSetFanIndex = 0;
+    sharpSetSwing = false;
+  }
   lastModeIndex = sharpSetModeIndex;
 }
 
